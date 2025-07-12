@@ -1,0 +1,35 @@
+services:
+  net_monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: net_monitor
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    working_dir: /app
+    networks:
+      - net-monitor
+    depends_on:
+      - mongodb_net_monitor
+
+  mongodb_net_monitor:
+    image: mongo:latest
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    networks:
+      - net-monitor
+    volumes:
+      - ./.docker/initMongo:/docker-entrypoint-initdb.d
+      - ./.docker/data/mongodb:/data/db
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+
+networks:
+  net-monitor:
+    driver: bridge

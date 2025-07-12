@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	controllers "net_monitor/Controllers"
 	models "net_monitor/Models"
@@ -11,14 +12,13 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env %v", err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatalf("Error loading .env %v", err)
+	// }
 
 	db.InitDatabase()
 
@@ -34,4 +34,6 @@ func main() {
 	if err := router.Run(":" + os.Getenv("APP_PORT")); err != nil {
 		log.Fatalf("Erro ao iniciar servidor %v", err)
 	}
+
+	fmt.Println("Go net monitor started")
 }
