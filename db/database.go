@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	models "net_monitor/Models"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,9 +17,7 @@ var MongoClient *mongo.Client
 const DBName = "net_monitor"
 
 func InitDatabase() {
-	mongoURI := "mongodb://localhost:27017/net_monitor_go"
-
-	clientOptions := options.Client().ApplyURI(mongoURI)
+	clientOptions := options.Client().ApplyURI(os.Getenv("MONGODB_URL"))
 
 	var err error
 

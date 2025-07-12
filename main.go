@@ -8,12 +8,19 @@ import (
 	routes "net_monitor/Routes"
 	services "net_monitor/Services"
 	"net_monitor/db"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	db.InitDatabase()
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env %v", err)
+	}
 
 	roteadorCollection := db.GetCollection("roteador")
 	roteadorRepo := repository.NewMongoRepository[models.Roteador](roteadorCollection)
@@ -24,7 +31,7 @@ func main() {
 
 	routes.SetupRoteadorRoutes(router, roteadorController)
 
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":" + os.Getenv("APP_PORT")); err != nil {
 		log.Fatalf("Erro ao iniciar servidor %v", err)
 	}
 }
