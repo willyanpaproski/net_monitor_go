@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-	db.InitDatabase()
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env %v", err)
 	}
+
+	db.InitDatabase()
 
 	roteadorCollection := db.GetCollection("roteador")
 	roteadorRepo := repository.NewMongoRepository[models.Roteador](roteadorCollection)

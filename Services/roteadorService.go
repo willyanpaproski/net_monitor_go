@@ -3,6 +3,7 @@ package services
 import (
 	models "net_monitor/Models"
 	repository "net_monitor/Repository"
+	utils "net_monitor/Utils"
 )
 
 type RoteadorService interface {
@@ -26,6 +27,11 @@ func (s *roteadorServiceImpl) GetAll() ([]models.Roteador, error) {
 }
 
 func (s *roteadorServiceImpl) Create(roteador *models.Roteador) error {
+	hashedPassword, err := utils.HashPassword(roteador.SenhaAcesso)
+	if err != nil {
+		return err
+	}
+	roteador.SenhaAcesso = hashedPassword
 	return s.repo.Create(roteador)
 }
 
