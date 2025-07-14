@@ -52,6 +52,6 @@ func RoteadorIndexes(collection *mongo.Collection) {
 
 	_, err := collection.Indexes().CreateMany(ctx, indexModel)
 	if err != nil {
-		log.Fatalf("Error creating unique index for Roteador.nome: %v", err)
+		log.Fatalf("Error creating unique index for Roteador: %v", err)
 	}
 }

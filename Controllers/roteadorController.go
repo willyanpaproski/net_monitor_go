@@ -16,7 +16,7 @@ func NewRoteadorController(service services.RoteadorService) *RoteadorController
 	return &RoteadorController{Service: service}
 }
 
-func (c *RoteadorController) GetAll(goGin *gin.Context) {
+func (c *RoteadorController) GetAllRoteadores(goGin *gin.Context) {
 	roteadores, err := c.Service.GetAll()
 	if err != nil {
 		goGin.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -25,7 +25,7 @@ func (c *RoteadorController) GetAll(goGin *gin.Context) {
 	goGin.JSON(http.StatusOK, roteadores)
 }
 
-func (c *RoteadorController) GetById(goGin *gin.Context) {
+func (c *RoteadorController) GetRoteadorById(goGin *gin.Context) {
 	id := goGin.Param("id")
 	roteador, err := c.Service.GetById(id)
 	if err != nil {
@@ -39,40 +39,58 @@ func (c *RoteadorController) GetById(goGin *gin.Context) {
 	goGin.JSON(http.StatusOK, roteador)
 }
 
-func (c *RoteadorController) Create(goGin *gin.Context) {
+func (c *RoteadorController) CreateRoteador(goGin *gin.Context) {
 	var req models.Roteador
-	if err := goGin.ShouldBindJSON(&req); err != nil {
+	if errValidation := goGin.ShouldBindJSON(&req); errValidation != nil {
 		goGin.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
-	err := c.Service.Create(&req)
-	if err != nil {
-		goGin.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	errCreate := c.Service.Create(&req)
+	if errCreate != nil {
+		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errCreate.Error()})
 		return
 	}
 	goGin.JSON(http.StatusCreated, req)
 }
 
-func (c *RoteadorController) Update(goGin *gin.Context) {
+func (c *RoteadorController) UpdateRoteador(goGin *gin.Context) {
 	id := goGin.Param("id")
 	var req models.Roteador
-	if err := goGin.ShouldBindJSON(&req); err != nil {
+	roteador, errSearch := c.Service.GetById(id)
+	if errSearch != nil {
+		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errSearch.Error()})
+		return
+	}
+	if roteador == nil {
+		goGin.JSON(http.StatusNotFound, gin.H{"error": "Roteador não encontrado"})
+		return
+	}
+	if errValidation := goGin.ShouldBindJSON(&req); errValidation != nil {
 		goGin.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
-	err := c.Service.Update(id, &req)
-	if err != nil {
-		goGin.JSON(http.StatusInternalServerError, gin.H{"error": "Dados inválidos"})
+	errUpdate := c.Service.Update(id, &req)
+	if errUpdate != nil {
+		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errUpdate.Error()})
 		return
 	}
 	goGin.JSON(http.StatusOK, req)
 }
 
-func (c *RoteadorController) Delete(goGin *gin.Context) {
+func (c *RoteadorController) DeleteRoteador(goGin *gin.Context) {
 	id := goGin.Param("id")
-	err := c.Service.Delete(id)
-	if err != nil {
-		goGin.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	roteador, errSearch := c.Service.GetById(id)
+	if errSearch != nil {
+		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errSearch.Error()})
+		return
+	}
+	if roteador == nil {
+		goGin.JSON(http.StatusNotFound, gin.H{"error": "Roteador não encontrado"})
+		return
+	}
+	errDelete := c.Service.Delete(id)
+	if errDelete != nil {
+		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errDelete.Error()})
 		return
 	}
 	goGin.JSON(http.StatusNoContent, nil)

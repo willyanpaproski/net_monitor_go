@@ -14,11 +14,11 @@ func SetupRoteadorRoutes(
 	{
 		roteadores := api.Group("/roteadores")
 		{
-			roteadores.GET("", roteadorController.GetAll)
-			roteadores.GET("/:id", roteadorController.GetById)
-			roteadores.POST("", roteadorController.Create)
-			roteadores.PATCH("/:id", roteadorController.Update)
-			roteadores.DELETE("/:id", roteadorController.Delete)
+			roteadores.GET("", roteadorController.GetAllRoteadores)
+			roteadores.GET("/:id", roteadorController.GetRoteadorById)
+			roteadores.POST("", roteadorController.CreateRoteador)
+			roteadores.PATCH("/:id", roteadorController.UpdateRoteador)
+			roteadores.DELETE("/:id", roteadorController.DeleteRoteador)
 		}
 	}
 }

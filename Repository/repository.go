@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"net_monitor/Utils"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,8 +23,16 @@ func (r *MongoRepository[T]) Create(collection *T) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := r.Collection.InsertOne(ctx, collection)
-	return err
+	result, err := r.Collection.InsertOne(ctx, collection)
+	if err != nil {
+		return err
+	}
+
+	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
+		Utils.SetMongoID(collection, oid)
+	}
+
+	return nil
 }
 
 func (r *MongoRepository[T]) GetAll() ([]T, error) {

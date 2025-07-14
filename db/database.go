@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 	models "net_monitor/Models"
 	"os"
@@ -17,7 +18,18 @@ var MongoClient *mongo.Client
 const DBName = "net_monitor"
 
 func InitDatabase() {
-	clientOptions := options.Client().ApplyURI(os.Getenv("MONGODB_URL"))
+	mongoDbHost := os.Getenv("MONGODB_HOST")
+	mongoDbPort := os.Getenv("MONGODB_PORT")
+	mongoDbUser := os.Getenv("MONGODB_USER")
+	mongoDbPassword := os.Getenv("MONGODB_PASSWORD")
+	mongoDbDatabase := os.Getenv("MONGODB_DATABASE")
+	mongoDbUrl := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource=admin", mongoDbUser, mongoDbPassword, mongoDbHost, mongoDbPort, mongoDbDatabase)
+
+	if os.Getenv("ENVIROMENT") == "dev" {
+		mongoDbUrl = fmt.Sprintf("mongodb://127.0.0.1:%s/%s", mongoDbPort, mongoDbDatabase)
+	}
+
+	clientOptions := options.Client().ApplyURI(mongoDbUrl)
 
 	var err error
 
@@ -37,9 +49,10 @@ func InitDatabase() {
 	log.Println("Connection with mongodb working")
 
 	db := MongoClient.Database("net_monitor")
-	roteadoresCollection := db.Collection("roteador")
 
-	models.RoteadorIndexes(roteadoresCollection)
+	models.RoteadorIndexes(db.Collection("roteador"))
+	models.TransmissorFibraIndexes(db.Collection("transmissorFibra"))
+	models.SwitchRedeIndexes(db.Collection("switchRede"))
 }
 
 func GetCollection(collectionName string) *mongo.Collection {
