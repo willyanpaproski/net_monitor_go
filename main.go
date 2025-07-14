@@ -55,5 +55,5 @@ func main() {
 		log.Fatalf("Erro ao iniciar servidor %v", err)
 	}
 
-	fmt.Println("Go net monitor started")
+	fmt.Println("Go net monitor starteda")
 }
