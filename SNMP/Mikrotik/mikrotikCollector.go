@@ -2,19 +2,29 @@ package mikrotik
 
 import (
 	"log"
-	models "net_monitor/Models"
-	"net_monitor/Utils"
 	"time"
+
+	models "net_monitor/Models"
+	mikrotiksnmpcollectors "net_monitor/SNMP/Mikrotik/MikrotikSnmpCollectors"
+	"net_monitor/Utils"
 
 	"github.com/gosnmp/gosnmp"
 )
 
 type MikrotikCollector struct{}
 
-func (m *MikrotikCollector) MikrotikSNMP(roteador models.Roteador) (map[string]interface{}, error) {
-	snmpPort, snmpPortError := Utils.ParseInt(roteador.PortaSnmp)
-	if snmpPortError != nil {
-		log.Fatalf("Error casting SNMP Port %v", snmpPortError)
+func NewMikrotikCollector() *MikrotikCollector {
+	return &MikrotikCollector{}
+}
+
+func (m *MikrotikCollector) GetVendor() string {
+	return "mikrotik"
+}
+
+func (m *MikrotikCollector) Collect(roteador models.Roteador) (map[string]interface{}, error) {
+	snmpPort, err := Utils.ParseInt(roteador.PortaSnmp)
+	if err != nil {
+		return nil, err
 	}
 
 	params := &gosnmp.GoSNMP{
@@ -26,21 +36,27 @@ func (m *MikrotikCollector) MikrotikSNMP(roteador models.Roteador) (map[string]i
 		Retries:   1,
 	}
 
-	snmpConnectionError := params.Connect()
-	if snmpConnectionError != nil {
-		log.Fatalf("Error connecting with snmp device %v:%v\n%v", roteador.Nome, roteador.EnderecoIP, snmpConnectionError)
-	}
-	defer params.Conn.Close()
-
-	oids := []string{".1.3.6.1.2.1.1.1.0"}
-	result, err := params.Get(oids)
+	err = params.Connect()
 	if err != nil {
 		return nil, err
 	}
+	defer params.Conn.Close()
 
 	data := make(map[string]interface{})
-	for _, variable := range result.Variables {
-		data["sysDescr"] = string(variable.Value.([]byte))
+
+	if usedMemory, err := mikrotiksnmpcollectors.CollectMikrotikUsedMemory(params, roteador); err == nil {
+		data["used_memory_mb"] = usedMemory
+	} else {
+		log.Printf("Erro ao coletar memória do roteador %s: %v", roteador.Nome, err)
+		data["used_memory_mb"] = nil
 	}
+
+	if cpuUsage, err := mikrotiksnmpcollectors.CollectMikrotikCpuUtilizationPercent(params, roteador); err == nil {
+		data["cpu_usage_percent"] = cpuUsage
+	} else {
+		log.Printf("Erro ao coletar CPU do roteador %s: %v", roteador.Nome, err)
+		data["cpu_usage_percent"] = nil
+	}
+
 	return data, nil
 }
