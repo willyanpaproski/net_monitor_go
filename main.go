@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	initializer "net_monitor/Initializer"
+	middlewares "net_monitor/Middlewares"
 	"net_monitor/db"
 	"os"
 
@@ -20,6 +21,7 @@ func main() {
 	db.InitDatabase()
 
 	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
 
 	initializer.InitDependencies(router)
 

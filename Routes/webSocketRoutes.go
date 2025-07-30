@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"time"
 
 	services "net_monitor/Services"
 	"net_monitor/websocket"
@@ -21,9 +20,8 @@ func SetupWebSocketRoutes(
 	{
 		api.POST("/start/:router_id", func(c *gin.Context) {
 			routerID := c.Param("router_id")
-			interval := 5 * time.Second
 
-			if err := snmpService.StartCollection(routerID, interval); err != nil {
+			if err := snmpService.StartCollection(routerID); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
