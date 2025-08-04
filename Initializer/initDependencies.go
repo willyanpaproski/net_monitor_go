@@ -40,5 +40,11 @@ func InitDependencies(router *gin.Engine) {
 	switchRedeRepo := repository.NewMongoRepository[models.SwitchRede](switchRedeCollection)
 	switchRedeService := services.NewSwitchRedeService(switchRedeRepo)
 	switchRedeController := controllers.NewSwitchRedeController(switchRedeService)
-	routes.StartupSwitchRedeRoutes(router, switchRedeController)
+	routes.SetupSwitchRedeRoutes(router, switchRedeController)
+
+	logCollection := db.GetCollection("log")
+	logRepo := repository.NewMongoRepository[models.Log](logCollection)
+	logService := services.NewLogService(logRepo)
+	logController := controllers.NewLogController(logService)
+	routes.SetupLogRoutes(router, logController)
 }

@@ -47,6 +47,14 @@ func SwitchRedeIndexes(collection *mongo.Collection) {
 			Keys:    bson.D{{Key: "portaSnmp", Value: 1}},
 			Options: options.Index().SetName("_portaSnmp"),
 		},
+		{
+			Keys:    bson.D{{Key: "created_at", Value: 1}},
+			Options: options.Index().SetName("_created_at"),
+		},
+		{
+			Keys:    bson.D{{Key: "updated_at", Value: 1}},
+			Options: options.Index().SetName("_updated_at"),
+		},
 	}
 
 	_, err := collection.Indexes().CreateMany(ctx, indexModel)

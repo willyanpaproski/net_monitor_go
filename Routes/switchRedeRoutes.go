@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func StartupSwitchRedeRoutes(
+func SetupSwitchRedeRoutes(
 	router *gin.Engine,
 	switchRedeController *controllers.SwitchRedeController,
 ) {

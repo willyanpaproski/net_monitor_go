@@ -20,4 +20,6 @@ type SwitchRede struct {
 	EnderecoIP    string                   `json:"enderecoIp" bson:"enderecoIp"`
 	CommunitySnmp string                   `json:"communitySnmp" bson:"communitySnmp"`
 	PortaSnmp     string                   `json:"portaSnmp" bson:"portaSnmp"`
+	Created_At    primitive.DateTime       `json:"created_at" bson:"created_at"`
+	Updated_At    primitive.DateTime       `json:"updated_at" bson:"updated_at"`
 }
