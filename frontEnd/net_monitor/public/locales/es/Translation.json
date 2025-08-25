@@ -1,0 +1,11 @@
+{
+    "languageSelector": {
+        "language": "Idioma",
+        "pt": "Portugués",
+        "es": "Español",
+        "en": "Inglés"
+    },
+    "loginPage": {
+        "signIn": "Accesso"
+    }
+}

@@ -30,11 +30,11 @@ func (m *MikrotikCollector) Collect(roteador models.Roteador) (map[string]interf
 
 	data := make(map[string]interface{})
 
-	if cpu, err := m.collectCPUInternal(snmpParams, roteador); err == nil {
+	if cpu, err := mikrotiksnmpcollectors.CollectMikrotikCpuUtilizationPercent(snmpParams, roteador); err == nil {
 		data["cpu_usage_percent"] = cpu
 	}
 
-	if memory, err := m.collectMemoryInternal(snmpParams, roteador); err == nil {
+	if memory, err := mikrotiksnmpcollectors.CollectMikrotikUsedMemory(snmpParams, roteador); err == nil {
 		data["used_memory_mb"] = memory
 	}
 
@@ -50,9 +50,9 @@ func (m *MikrotikCollector) CollectMetric(router models.Roteador, metricName str
 
 	switch metricName {
 	case "cpu_usage":
-		return m.collectCPUInternal(snmpParams, router)
+		return mikrotiksnmpcollectors.CollectMikrotikCpuUtilizationPercent(snmpParams, router)
 	case "memory_usage":
-		return m.collectMemoryInternal(snmpParams, router)
+		return mikrotiksnmpcollectors.CollectMikrotikUsedMemory(snmpParams, router)
 	default:
 		return nil, fmt.Errorf("métrica '%s' não suportada pelo collector MikroTik", metricName)
 	}
@@ -90,12 +90,4 @@ func (m *MikrotikCollector) createSNMPParams(router models.Roteador) (*gosnmp.Go
 	}
 
 	return params, nil
-}
-
-func (m *MikrotikCollector) collectCPUInternal(params *gosnmp.GoSNMP, router models.Roteador) (int, error) {
-	return mikrotiksnmpcollectors.CollectMikrotikCpuUtilizationPercent(params, router)
-}
-
-func (m *MikrotikCollector) collectMemoryInternal(params *gosnmp.GoSNMP, router models.Roteador) (float64, error) {
-	return mikrotiksnmpcollectors.CollectMikrotikUsedMemory(params, router)
 }
