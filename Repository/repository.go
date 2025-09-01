@@ -101,3 +101,25 @@ func (r *MongoRepository[T]) Delete(id string) error {
 	_, err = r.Collection.DeleteOne(ctx, bson.M{"_id": objId})
 	return err
 }
+
+func (r *MongoRepository[T]) GetByFilter(filter bson.M) ([]T, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cursor, err := r.Collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []T
+	for cursor.Next(ctx) {
+		var elem T
+		if err := cursor.Decode(&elem); err != nil {
+			return nil, err
+		}
+		results = append(results, elem)
+	}
+
+	return results, nil
+}

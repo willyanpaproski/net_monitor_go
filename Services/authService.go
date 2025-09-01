@@ -1,0 +1,217 @@
+package services
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	models "net_monitor/Models"
+	repository "net_monitor/Repository"
+	utils "net_monitor/Utils"
+	"net_monitor/config"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/oauth2"
+)
+
+type AuthService interface {
+	Login(email, senha string) (*models.LoginResponse, error)
+	RefreshToken(refreshToken string) (*models.LoginResponse, error)
+	GoogleOAuthUrl() string
+	GoogleCallback(code string) (*models.LoginResponse, error)
+	Logout(refreshToken string) error
+	ValidateToken(token string) (*models.User, error)
+}
+
+type authServiceImpl struct {
+	userRepo         *repository.MongoRepository[models.User]
+	oauthRepo        *repository.MongoRepository[models.OAuthProvider]
+	refreshTokenRepo *repository.MongoRepository[models.RefreshToken]
+	userService      UserService
+	jwtManager       *utils.JWTManager
+	oauthConfig      *config.OAuthConfig
+}
+
+func NewAuthService(
+	userRepo *repository.MongoRepository[models.User],
+	oauthRepo *repository.MongoRepository[models.OAuthProvider],
+	refreshTokenRepo *repository.MongoRepository[models.RefreshToken],
+	userService UserService,
+	jwtManager *utils.JWTManager,
+	oauthConfig *config.OAuthConfig,
+) AuthService {
+	return &authServiceImpl{
+		userRepo:         userRepo,
+		oauthRepo:        oauthRepo,
+		refreshTokenRepo: refreshTokenRepo,
+		userService:      userService,
+		jwtManager:       jwtManager,
+		oauthConfig:      oauthConfig,
+	}
+}
+
+func (s *authServiceImpl) Login(email, senha string) (*models.LoginResponse, error) {
+	users, err := s.userRepo.GetByFilter(bson.M{"emailUsuario": email, "ativo": true})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(users) == 0 {
+		return nil, errors.New("Usuário não encontrado")
+	}
+
+	user := users[0]
+
+	if !utils.ComparePassword(senha, user.SenhaUsuario) {
+		return nil, errors.New("Senha inválida")
+	}
+
+	return s.generateLoginResponse(&user)
+}
+
+func (s *authServiceImpl) RefreshToken(refreshTokenStr string) (*models.LoginResponse, error) {
+	tokens, err := s.refreshTokenRepo.GetByFilter(bson.M{"token": refreshTokenStr})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(tokens) == 0 {
+		return nil, errors.New("Refresh token inválido")
+	}
+
+	refreshToken := tokens[0]
+
+	if time.Now().After(refreshToken.ExpiresAt) {
+		s.refreshTokenRepo.Delete(refreshToken.ID.Hex())
+		return nil, errors.New("refresh token expirado")
+	}
+
+	user, err := s.userService.GetById(refreshToken.UsuarioID.Hex())
+	if err != nil {
+		return nil, err
+	}
+
+	s.refreshTokenRepo.Delete(refreshToken.ID.Hex())
+
+	return s.generateLoginResponse(user)
+}
+
+func (s *authServiceImpl) GoogleOAuthUrl() string {
+	return s.oauthConfig.GoogleConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
+}
+
+func (s *authServiceImpl) GoogleCallback(code string) (*models.LoginResponse, error) {
+	token, err := s.oauthConfig.GoogleConfig.Exchange(context.Background(), code)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao trocar código: %v", err)
+	}
+
+	client := s.oauthConfig.GoogleConfig.Client(context.Background(), token)
+	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
+	if err != nil {
+		return nil, fmt.Errorf("erro ao buscar informações do usuário: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var googleUser struct {
+		ID      string `json:"id"`
+		Email   string `json:"email"`
+		Name    string `json:"name"`
+		Picture string `json:"picture"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&googleUser); err != nil {
+		return nil, fmt.Errorf("erro ao decodificar resposta: %v", err)
+	}
+
+	users, err := s.userRepo.GetByFilter(bson.M{"emailUsuario": googleUser.Email})
+	if err != nil {
+		return nil, err
+	}
+
+	var user *models.User
+
+	if len(users) > 0 {
+		user = &users[0]
+	}
+
+	oauthProviders, err := s.oauthRepo.GetByFilter(bson.M{
+		"usuarioId":  user.ID,
+		"provider":   "google",
+		"providerId": googleUser.ID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(oauthProviders) == 0 {
+		oauthProvider := models.OAuthProvider{
+			ID:         primitive.NewObjectID(),
+			UsuarioID:  user.ID,
+			Provider:   "google",
+			ProviderID: googleUser.ID,
+			Email:      googleUser.Email,
+			Nome:       googleUser.Name,
+			Avatar:     googleUser.Picture,
+			Created_At: primitive.NewDateTimeFromTime(time.Now()),
+			Updated_At: primitive.NewDateTimeFromTime(time.Now()),
+		}
+
+		if err := s.oauthRepo.Create(&oauthProvider); err != nil {
+			return nil, err
+		}
+	}
+
+	return s.generateLoginResponse(user)
+}
+
+func (s *authServiceImpl) Logout(refreshTokenStr string) error {
+	tokens, err := s.refreshTokenRepo.GetByFilter(bson.M{"token": refreshTokenStr})
+	if err != nil {
+		return err
+	}
+
+	if len(tokens) > 0 {
+		return s.refreshTokenRepo.Delete(tokens[0].ID.Hex())
+	}
+
+	return nil
+}
+
+func (s *authServiceImpl) ValidateToken(tokenStr string) (*models.User, error) {
+	claims, err := s.jwtManager.ValidateToken(tokenStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.userService.GetById(claims.UserID)
+}
+
+func (s *authServiceImpl) generateLoginResponse(user *models.User) (*models.LoginResponse, error) {
+	accessToken, expiresAt, err := s.jwtManager.GenerateToken(user)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshTokenStr := s.jwtManager.GenerateRefreshToken()
+	refreshToken := models.RefreshToken{
+		ID:         primitive.NewObjectID(),
+		UsuarioID:  user.ID,
+		Token:      refreshTokenStr,
+		ExpiresAt:  time.Now().Add(7 * 24 * time.Hour),
+		Created_At: time.Now(),
+	}
+
+	if err := s.refreshTokenRepo.Create(&refreshToken); err != nil {
+		return nil, err
+	}
+
+	return &models.LoginResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshTokenStr,
+		ExpiresAt:    expiresAt,
+		User:         *user,
+	}, nil
+}

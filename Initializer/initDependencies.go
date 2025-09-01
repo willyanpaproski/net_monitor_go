@@ -7,6 +7,8 @@ import (
 	routes "net_monitor/Routes"
 	mikrotik "net_monitor/SNMP/Mikrotik"
 	services "net_monitor/Services"
+	utils "net_monitor/Utils"
+	"net_monitor/config"
 	"net_monitor/db"
 	"net_monitor/websocket"
 
@@ -47,4 +49,24 @@ func InitDependencies(router *gin.Engine) {
 	logService := services.NewLogService(logRepo)
 	logController := controllers.NewLogController(logService)
 	routes.SetupLogRoutes(router, logController)
+
+	userCollection := db.GetCollection("user")
+	userRepo := repository.NewMongoRepository[models.User](userCollection)
+	userService := services.NewUserService(userRepo)
+	userController := controllers.NewUserController(userService)
+	routes.SetupUserRoutes(router, userController)
+
+	oauthConfig := config.NewAuthConfig()
+	jwtManager := utils.NewJWTManager(oauthConfig.JWTSecret)
+
+	oauthRepoCollection := db.GetCollection("oauth_providers")
+	oauthRepo := repository.NewMongoRepository[models.OAuthProvider](oauthRepoCollection)
+
+	refreshTokensCollection := db.GetCollection("refresh_tokens")
+	refreshTokenRepo := repository.NewMongoRepository[models.RefreshToken](refreshTokensCollection)
+
+	authService := services.NewAuthService(userRepo, oauthRepo, refreshTokenRepo, userService, jwtManager, oauthConfig)
+	authController := controllers.NewAuthController(authService)
+
+	routes.SetupAuthRoutes(router, authController)
 }

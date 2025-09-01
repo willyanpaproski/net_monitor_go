@@ -14,7 +14,6 @@ func RoteadorIndexes(collection *mongo.Collection) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	//Indexa nessa jabirosca so o que for unique ou utilizado pra filtro
 	indexModel := []mongo.IndexModel{
 		{
 			Keys:    bson.D{{Key: "ativo", Value: 1}},

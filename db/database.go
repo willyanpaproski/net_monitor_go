@@ -53,6 +53,9 @@ func InitDatabase() {
 	models.RoteadorIndexes(db.Collection("roteador"))
 	models.TransmissorFibraIndexes(db.Collection("transmissorFibra"))
 	models.SwitchRedeIndexes(db.Collection("switchRede"))
+	models.UserIndexes(db.Collection("user"))
+	models.OAuthProviderIndexes(db.Collection("oauth_providers"))
+	models.RefreshTokenIndexes(db.Collection("refresh_tokens"))
 }
 
 func GetCollection(collectionName string) *mongo.Collection {

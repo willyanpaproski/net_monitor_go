@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useLanguageContext } from '../contexts/LanguageContext';
 import { useI18n } from '../hooks/usei18n';
-import CustomizedTreeView from './CustomTreeView';
 
 export default function LanguageSelector() {
     const { t } = useI18n();
