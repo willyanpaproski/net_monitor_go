@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	middlewares "net_monitor/Middlewares"
 	services "net_monitor/Services"
 	"net_monitor/websocket"
 
@@ -13,10 +14,12 @@ func SetupWebSocketRoutes(
 	router *gin.Engine,
 	hub *websocket.Hub,
 	snmpService *services.SNMPService,
+	authService services.AuthService,
 ) {
 	router.GET("/ws/snmp", gin.WrapH(http.HandlerFunc(hub.ServeWS)))
 
 	api := router.Group("/api/snmp")
+	api.Use(middlewares.AuthMiddleware(authService))
 	{
 		api.POST("/start/:router_id", func(c *gin.Context) {
 			routerID := c.Param("router_id")

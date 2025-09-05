@@ -2,6 +2,8 @@ package routes
 
 import (
 	controllers "net_monitor/Controllers"
+	middlewares "net_monitor/Middlewares"
+	services "net_monitor/Services"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,10 +11,12 @@ import (
 func SetupTransmissorFibraRoutes(
 	router *gin.Engine,
 	transmissorFibraController *controllers.TransmissorFibraController,
+	authService services.AuthService,
 ) {
 	api := router.Group("/api")
 	{
 		transmissoresFibra := api.Group("/transmissoresFibra")
+		transmissoresFibra.Use(middlewares.AuthMiddleware(authService))
 		{
 			transmissoresFibra.GET("", transmissorFibraController.GetAllTransmissoresFibra)
 			transmissoresFibra.GET("/:id", transmissorFibraController.GetTransmissorFibraById)
