@@ -28,7 +28,7 @@ func (j *JWTManager) GenerateToken(user *models.User) (string, time.Time, error)
 
 	claims := &JWTClaims{
 		UserID: user.ID.Hex(),
-		Email:  user.EmailUsuario,
+		Email:  user.Email,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

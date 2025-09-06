@@ -6,6 +6,18 @@
         "en": "Inglés"
     },
     "loginPage": {
-        "signIn": "Accesso"
+        "signIn": "Accesso",
+        "email": "Email",
+        "password": "Contraseña",
+        "schema": {
+            "invalidEmail": "Por favor proporcione un correo electrónico válido",
+            "passwordLength": "La contraseña debe contener al menos 6 caracteres"
+        },
+        "errors": {
+            "invalidPassword": "Contraseña no válida",
+            "userNotFound": "Usuario no encontrado",
+            "userInactive": "Usuario inactivado",
+            "loginError": "Error al iniciar sesión"
+        }
     }
 }

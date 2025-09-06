@@ -89,13 +89,13 @@ func (s *SNMPService) StartCollectionWithConfig(routerID string) error {
 		return err
 	}
 
-	collector, exists := s.collectors[string(router.Integracao)]
+	collector, exists := s.collectors[string(router.Integration)]
 	if !exists {
-		log.Printf("Collector não encontrado para vendor: %s", router.Integracao)
+		log.Printf("Collector não encontrado para vendor: %s", router.Integration)
 		return nil
 	}
 
-	configs := s.getMetricConfigs(string(router.Integracao))
+	configs := s.getMetricConfigs(string(router.Integration))
 
 	collection := &RouterCollection{
 		RouterID:  routerID,
@@ -121,7 +121,7 @@ func (s *SNMPService) StartCollectionWithConfig(routerID string) error {
 	go s.startMetricCollections(collection)
 
 	log.Printf("Coleta multi-intervalo iniciada para roteador %s (%s) com %d métricas",
-		router.Nome, router.Integracao, len(configs))
+		router.Name, router.Integration, len(configs))
 
 	return nil
 }
@@ -185,7 +185,7 @@ func (s *SNMPService) createGenericCollectFunction(
 				metricConfig.Name, metricConfig.DataKey, metricConfig.FallbackKeys)
 		}
 
-		log.Printf("Métrica opcional '%s' não encontrada para %s", metricConfig.Name, router.Nome)
+		log.Printf("Métrica opcional '%s' não encontrada para %s", metricConfig.Name, router.Name)
 		return nil, nil
 	}
 }
@@ -226,8 +226,8 @@ func (s *SNMPService) performMetricCollection(collection *RouterCollection, metr
 
 	message := SNMPMetricMessage{
 		RouterID:   collection.RouterID,
-		RouterName: collection.Router.Nome,
-		Vendor:     string(collection.Router.Integracao),
+		RouterName: collection.Router.Name,
+		Vendor:     string(collection.Router.Integration),
 		Metric:     metricName,
 		Value:      value,
 		Timestamp:  time.Now(),
@@ -235,7 +235,7 @@ func (s *SNMPService) performMetricCollection(collection *RouterCollection, metr
 
 	if err != nil {
 		message.Error = err.Error()
-		log.Printf("Erro na coleta da métrica %s para %s: %v", metricName, collection.Router.Nome, err)
+		log.Printf("Erro na coleta da métrica %s para %s: %v", metricName, collection.Router.Name, err)
 	} else if value != nil {
 		metric.LastValue = value
 		metric.LastUpdate = message.Timestamp

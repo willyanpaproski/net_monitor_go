@@ -27,11 +27,11 @@ func (s *userServiceImpl) GetAll() ([]models.User, error) {
 }
 
 func (s *userServiceImpl) Create(user *models.User) error {
-	hashedPassword, err := utils.HashPassword(user.SenhaUsuario)
+	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
-	user.SenhaUsuario = hashedPassword
+	user.Password = hashedPassword
 	return s.repo.Create(user)
 }
 
@@ -44,10 +44,10 @@ func (s *userServiceImpl) Delete(id string) error {
 }
 
 func (s *userServiceImpl) Update(id string, user *models.User) error {
-	hashedPassword, err := utils.HashPassword(user.SenhaUsuario)
+	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
-	user.SenhaUsuario = hashedPassword
+	user.Password = hashedPassword
 	return s.repo.Update(id, user)
 }

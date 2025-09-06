@@ -70,15 +70,15 @@ func (m *MikrotikCollector) GetMetricMapping() map[string]string {
 }
 
 func (m *MikrotikCollector) createSNMPParams(router models.Roteador) (*gosnmp.GoSNMP, error) {
-	snmpPort, err := Utils.ParseInt(router.PortaSnmp)
+	snmpPort, err := Utils.ParseInt(router.SnmpPort)
 	if err != nil {
 		return nil, err
 	}
 
 	params := &gosnmp.GoSNMP{
-		Target:    router.EnderecoIP,
+		Target:    router.IPAddress,
 		Port:      uint16(snmpPort),
-		Community: router.CommunitySnmp,
+		Community: router.SnmpCommunity,
 		Version:   gosnmp.Version2c,
 		Timeout:   2 * time.Second,
 		Retries:   1,

@@ -16,16 +16,16 @@ func UserIndexes(collection *mongo.Collection) {
 
 	indexModel := []mongo.IndexModel{
 		{
-			Keys:    bson.D{{Key: "ativo", Value: 1}},
-			Options: options.Index().SetName("_ativo"),
+			Keys:    bson.D{{Key: "active", Value: 1}},
+			Options: options.Index().SetName("_active"),
 		},
 		{
-			Keys:    bson.D{{Key: "emailUsuario", Value: 1}},
-			Options: options.Index().SetName("_emailUsuario"),
+			Keys:    bson.D{{Key: "email", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("_email"),
 		},
 		{
-			Keys:    bson.D{{Key: "senhaUsuario", Value: 1}},
-			Options: options.Index().SetName("_senhaUsuario"),
+			Keys:    bson.D{{Key: "password", Value: 1}},
+			Options: options.Index().SetName("_password"),
 		},
 		{
 			Keys:    bson.D{{Key: "created_at", Value: 1}},

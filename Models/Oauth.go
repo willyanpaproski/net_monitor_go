@@ -27,8 +27,8 @@ type RefreshToken struct {
 }
 
 type LoginRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	Senha string `json:"senha" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 type LoginResponse struct {

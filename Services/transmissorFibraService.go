@@ -27,11 +27,11 @@ func (s *transmissorFibraImpl) GetAll() ([]models.TransmissorFibra, error) {
 }
 
 func (s *transmissorFibraImpl) Create(transmissorFibra *models.TransmissorFibra) error {
-	hashedPassword, err := utils.HashPassword(transmissorFibra.SenhaAcesso)
+	hashedPassword, err := utils.HashPassword(transmissorFibra.AccessPassword)
 	if err != nil {
 		return err
 	}
-	transmissorFibra.SenhaAcesso = hashedPassword
+	transmissorFibra.AccessPassword = hashedPassword
 	return s.repo.Create(transmissorFibra)
 }
 
@@ -40,11 +40,11 @@ func (s *transmissorFibraImpl) GetById(id string) (*models.TransmissorFibra, err
 }
 
 func (s *transmissorFibraImpl) Update(id string, transmissorFibra *models.TransmissorFibra) error {
-	hashedPassword, err := utils.HashPassword(transmissorFibra.SenhaAcesso)
+	hashedPassword, err := utils.HashPassword(transmissorFibra.AccessPassword)
 	if err != nil {
 		return err
 	}
-	transmissorFibra.SenhaAcesso = hashedPassword
+	transmissorFibra.AccessPassword = hashedPassword
 	return s.repo.Update(id, transmissorFibra)
 }
 

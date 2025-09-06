@@ -23,9 +23,13 @@ func (c *AuthController) Login(goGin *gin.Context) {
 		return
 	}
 
-	response, err := c.authService.Login(req.Email, req.Senha)
+	response, err, apiErr := c.authService.Login(req.Email, req.Password)
 	if err != nil {
 		goGin.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	if apiErr != nil {
+		goGin.JSON(http.StatusBadRequest, gin.H{"error": apiErr})
 		return
 	}
 
@@ -42,9 +46,13 @@ func (c *AuthController) RefreshToken(goGin *gin.Context) {
 		return
 	}
 
-	response, err := c.authService.RefreshToken(req.RefreshToken)
+	response, err, apiErr := c.authService.RefreshToken(req.RefreshToken)
 	if err != nil {
 		goGin.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	if apiErr != nil {
+		goGin.JSON(http.StatusBadRequest, gin.H{"error": apiErr})
 		return
 	}
 
@@ -63,9 +71,13 @@ func (c *AuthController) GoogleCallback(goGin *gin.Context) {
 		return
 	}
 
-	response, err := c.authService.GoogleCallback(code)
+	response, err, apiErr := c.authService.GoogleCallback(code)
 	if err != nil {
 		goGin.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	if apiErr != nil {
+		goGin.JSON(http.StatusBadRequest, gin.H{"error": apiErr})
 		return
 	}
 

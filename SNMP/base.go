@@ -32,11 +32,11 @@ func GetIntOid(snmp *gosnmp.GoSNMP, oid string, resource string, router models.R
 		case int:
 			return v, nil
 		default:
-			return 0, fmt.Errorf("Invalid type for %v of %v:%v", resource, router.Nome, router.EnderecoIP)
+			return 0, fmt.Errorf("Invalid type for %v of %v:%v", resource, router.Name, router.IPAddress)
 		}
 	}
 
-	return 0, fmt.Errorf("Error collecting %v for %v:%v", resource, router.Nome, router.EnderecoIP)
+	return 0, fmt.Errorf("Error collecting %v for %v:%v", resource, router.Name, router.IPAddress)
 }
 
 func GetStringOid(snmp *gosnmp.GoSNMP, oid string, resource string, router models.Roteador) (string, error) {
@@ -54,9 +54,9 @@ func GetStringOid(snmp *gosnmp.GoSNMP, oid string, resource string, router model
 		case string:
 			return v, nil
 		default:
-			return "", fmt.Errorf("Invalid type for %v of %v:%v", resource, router.Nome, router.EnderecoIP)
+			return "", fmt.Errorf("Invalid type for %v of %v:%v", resource, router.Name, router.IPAddress)
 		}
 	}
 
-	return "", fmt.Errorf("Error collecting %v for %v:%v", resource, router.Nome, router.EnderecoIP)
+	return "", fmt.Errorf("Error collecting %v for %v:%v", resource, router.Name, router.IPAddress)
 }

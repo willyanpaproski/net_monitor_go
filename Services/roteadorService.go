@@ -27,11 +27,11 @@ func (s *roteadorServiceImpl) GetAll() ([]models.Roteador, error) {
 }
 
 func (s *roteadorServiceImpl) Create(roteador *models.Roteador) error {
-	hashedPassword, err := utils.HashPassword(roteador.SenhaAcesso)
+	hashedPassword, err := utils.HashPassword(roteador.AccessPassword)
 	if err != nil {
 		return err
 	}
-	roteador.SenhaAcesso = hashedPassword
+	roteador.AccessPassword = hashedPassword
 	return s.repo.Create(roteador)
 }
 

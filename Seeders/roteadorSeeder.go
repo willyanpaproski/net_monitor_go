@@ -22,21 +22,21 @@ func RoteadorSeeder(
 		randomNum := rand.Intn(3)
 
 		roteador := &models.Roteador{
-			Ativo:         true,
-			Integracao:    integracoes[randomNum],
-			Nome:          fmt.Sprintf("Roteador-%d", i),
-			Descricao:     fmt.Sprintf("Roteador automático número %d", i),
-			UsuarioAcesso: fmt.Sprintf("admin%d", i),
-			SenhaAcesso:   "senha123",
-			EnderecoIP:    fmt.Sprintf("192.168.1.%d", i),
-			CommunitySnmp: "public",
-			PortaSnmp:     "161",
+			Active:         true,
+			Integration:    integracoes[randomNum],
+			Name:           fmt.Sprintf("Roteador-%d", i),
+			Description:    fmt.Sprintf("Roteador automático número %d", i),
+			AccessUser:     fmt.Sprintf("admin%d", i),
+			AccessPassword: "senha123",
+			IPAddress:      fmt.Sprintf("192.168.1.%d", i),
+			SnmpCommunity:  "public",
+			SnmpPort:       "161",
 		}
 		err := roteadorService.Create(roteador)
 		if err != nil {
-			log.Fatalf("Error creating router %s: %v\n", roteador.Nome, err)
+			log.Fatalf("Error creating router %s: %v\n", roteador.Name, err)
 		} else {
-			log.Printf("Router %s created successfully", roteador.Nome)
+			log.Printf("Router %s created successfully", roteador.Name)
 		}
 	}
 

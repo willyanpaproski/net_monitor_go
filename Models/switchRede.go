@@ -10,16 +10,16 @@ const (
 )
 
 type SwitchRede struct {
-	ID            primitive.ObjectID       `json:"id,omitempty" bson:"_id,omitempty"`
-	Ativo         bool                     `json:"ativo" bson:"ativo"`
-	Integracao    SwitchRedeIntegracaoType `json:"integracao" bson:"integracao"`
-	Nome          string                   `json:"nome" bson:"nome"`
-	Descricao     string                   `json:"descricao" bson:"descricao"`
-	UsuarioAcesso string                   `json:"usuarioAcesso" bson:"usuarioAcesso"`
-	SenhaAcesso   string                   `json:"senhaAcesso" bson:"senhaAcesso"`
-	EnderecoIP    string                   `json:"enderecoIp" bson:"enderecoIp"`
-	CommunitySnmp string                   `json:"communitySnmp" bson:"communitySnmp"`
-	PortaSnmp     string                   `json:"portaSnmp" bson:"portaSnmp"`
-	Created_At    primitive.DateTime       `json:"created_at" bson:"created_at"`
-	Updated_At    primitive.DateTime       `json:"updated_at" bson:"updated_at"`
+	ID             primitive.ObjectID       `json:"id,omitempty" bson:"_id,omitempty"`
+	Active         bool                     `json:"active" bson:"active"`
+	Integration    SwitchRedeIntegracaoType `json:"integration" bson:"integration"`
+	Name           string                   `json:"name" bson:"name"`
+	Description    string                   `json:"description" bson:"description"`
+	AccessUser     string                   `json:"accessUser" bson:"accessUser"`
+	AccessPassword string                   `json:"accessPassword" bson:"accessPassword"`
+	IPAddress      string                   `json:"ipAddress" bson:"ipAddress"`
+	SnmpCommunity  string                   `json:"snmpCommunity" bson:"snmpCommunity"`
+	SnmpPort       string                   `json:"snmpPort" bson:"snmpPort"`
+	Created_At     primitive.DateTime       `json:"created_at" bson:"created_at"`
+	Updated_At     primitive.DateTime       `json:"updated_at" bson:"updated_at"`
 }

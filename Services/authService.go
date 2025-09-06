@@ -17,10 +17,10 @@ import (
 )
 
 type AuthService interface {
-	Login(email, senha string) (*models.LoginResponse, error)
-	RefreshToken(refreshToken string) (*models.LoginResponse, error)
+	Login(email, password string) (*models.LoginResponse, error, *utils.APIError)
+	RefreshToken(refreshToken string) (*models.LoginResponse, error, *utils.APIError)
 	GoogleOAuthUrl() string
-	GoogleCallback(code string) (*models.LoginResponse, error)
+	GoogleCallback(code string) (*models.LoginResponse, error, *utils.APIError)
 	Logout(refreshToken string) error
 	ValidateToken(token string) (*models.User, error)
 }
@@ -52,45 +52,58 @@ func NewAuthService(
 	}
 }
 
-func (s *authServiceImpl) Login(email, senha string) (*models.LoginResponse, error) {
-	users, err := s.userRepo.GetByFilter(bson.M{"emailUsuario": email, "ativo": true})
+func (s *authServiceImpl) Login(email, password string) (*models.LoginResponse, error, *utils.APIError) {
+	users, err := s.userRepo.GetByFilter(bson.M{"email": email})
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	if len(users) == 0 {
-		return nil, errors.New("Usuário não encontrado")
+		return nil, nil, &utils.APIError{
+			Code:    "USER_NOT_FOUND",
+			Message: "User not found",
+		}
+	}
+
+	if !users[0].Active {
+		return nil, nil, &utils.APIError{
+			Code:    "INACTIVE_USER",
+			Message: "Usuário inativo",
+		}
 	}
 
 	user := users[0]
 
-	if !utils.ComparePassword(senha, user.SenhaUsuario) {
-		return nil, errors.New("Senha inválida")
+	if !utils.ComparePassword(password, user.Password) {
+		return nil, nil, &utils.APIError{
+			Code:    "INVALID_PASSWORD",
+			Message: "Senha Inválida",
+		}
 	}
 
 	return s.generateLoginResponse(&user)
 }
 
-func (s *authServiceImpl) RefreshToken(refreshTokenStr string) (*models.LoginResponse, error) {
+func (s *authServiceImpl) RefreshToken(refreshTokenStr string) (*models.LoginResponse, error, *utils.APIError) {
 	tokens, err := s.refreshTokenRepo.GetByFilter(bson.M{"token": refreshTokenStr})
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	if len(tokens) == 0 {
-		return nil, errors.New("Refresh token inválido")
+		return nil, errors.New("Refresh token inválido"), nil
 	}
 
 	refreshToken := tokens[0]
 
 	if time.Now().After(refreshToken.ExpiresAt) {
 		s.refreshTokenRepo.Delete(refreshToken.ID.Hex())
-		return nil, errors.New("refresh token expirado")
+		return nil, errors.New("refresh token expirado"), nil
 	}
 
 	user, err := s.userService.GetById(refreshToken.UsuarioID.Hex())
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	s.refreshTokenRepo.Delete(refreshToken.ID.Hex())
@@ -102,16 +115,16 @@ func (s *authServiceImpl) GoogleOAuthUrl() string {
 	return s.oauthConfig.GoogleConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 }
 
-func (s *authServiceImpl) GoogleCallback(code string) (*models.LoginResponse, error) {
+func (s *authServiceImpl) GoogleCallback(code string) (*models.LoginResponse, error, *utils.APIError) {
 	token, err := s.oauthConfig.GoogleConfig.Exchange(context.Background(), code)
 	if err != nil {
-		return nil, fmt.Errorf("erro ao trocar código: %v", err)
+		return nil, fmt.Errorf("erro ao trocar código: %v", err), nil
 	}
 
 	client := s.oauthConfig.GoogleConfig.Client(context.Background(), token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
-		return nil, fmt.Errorf("erro ao buscar informações do usuário: %v", err)
+		return nil, fmt.Errorf("erro ao buscar informações do usuário: %v", err), nil
 	}
 	defer resp.Body.Close()
 
@@ -123,12 +136,12 @@ func (s *authServiceImpl) GoogleCallback(code string) (*models.LoginResponse, er
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&googleUser); err != nil {
-		return nil, fmt.Errorf("erro ao decodificar resposta: %v", err)
+		return nil, fmt.Errorf("erro ao decodificar resposta: %v", err), nil
 	}
 
-	users, err := s.userRepo.GetByFilter(bson.M{"emailUsuario": googleUser.Email})
+	users, err := s.userRepo.GetByFilter(bson.M{"email": googleUser.Email})
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	var user *models.User
@@ -143,7 +156,7 @@ func (s *authServiceImpl) GoogleCallback(code string) (*models.LoginResponse, er
 		"providerId": googleUser.ID,
 	})
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	if len(oauthProviders) == 0 {
@@ -160,7 +173,7 @@ func (s *authServiceImpl) GoogleCallback(code string) (*models.LoginResponse, er
 		}
 
 		if err := s.oauthRepo.Create(&oauthProvider); err != nil {
-			return nil, err
+			return nil, err, nil
 		}
 	}
 
@@ -189,10 +202,10 @@ func (s *authServiceImpl) ValidateToken(tokenStr string) (*models.User, error) {
 	return s.userService.GetById(claims.UserID)
 }
 
-func (s *authServiceImpl) generateLoginResponse(user *models.User) (*models.LoginResponse, error) {
+func (s *authServiceImpl) generateLoginResponse(user *models.User) (*models.LoginResponse, error, *utils.APIError) {
 	accessToken, expiresAt, err := s.jwtManager.GenerateToken(user)
 	if err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	refreshTokenStr := s.jwtManager.GenerateRefreshToken()
@@ -205,7 +218,7 @@ func (s *authServiceImpl) generateLoginResponse(user *models.User) (*models.Logi
 	}
 
 	if err := s.refreshTokenRepo.Create(&refreshToken); err != nil {
-		return nil, err
+		return nil, err, nil
 	}
 
 	return &models.LoginResponse{
@@ -213,5 +226,5 @@ func (s *authServiceImpl) generateLoginResponse(user *models.User) (*models.Logi
 		RefreshToken: refreshTokenStr,
 		ExpiresAt:    expiresAt,
 		User:         *user,
-	}, nil
+	}, nil, nil
 }

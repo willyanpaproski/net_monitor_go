@@ -16,36 +16,36 @@ func TransmissorFibraIndexes(collection *mongo.Collection) {
 
 	indexModel := []mongo.IndexModel{
 		{
-			Keys:    bson.D{{Key: "ativo", Value: 1}},
-			Options: options.Index().SetName("_ativo"),
+			Keys:    bson.D{{Key: "active", Value: 1}},
+			Options: options.Index().SetName("_active"),
 		},
 		{
-			Keys:    bson.D{{Key: "integracao", Value: 1}},
-			Options: options.Index().SetName("_integracao"),
+			Keys:    bson.D{{Key: "integration", Value: 1}},
+			Options: options.Index().SetName("_integration"),
 		},
 		{
-			Keys:    bson.D{{Key: "nome", Value: 1}},
-			Options: options.Index().SetUnique(true).SetName("_nome"),
+			Keys:    bson.D{{Key: "name", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("_name"),
 		},
 		{
-			Keys:    bson.D{{Key: "descricao", Value: 1}},
-			Options: options.Index().SetName("_descricao"),
+			Keys:    bson.D{{Key: "description", Value: 1}},
+			Options: options.Index().SetName("_description"),
 		},
 		{
-			Keys:    bson.D{{Key: "usuarioAcesso", Value: 1}},
-			Options: options.Index().SetName("_usuarioAcesso"),
+			Keys:    bson.D{{Key: "accessUser", Value: 1}},
+			Options: options.Index().SetName("_accessUser"),
 		},
 		{
-			Keys:    bson.D{{Key: "enderecoIp", Value: 1}},
-			Options: options.Index().SetName("_enderecoIp"),
+			Keys:    bson.D{{Key: "ipAddress", Value: 1}},
+			Options: options.Index().SetName("_ipAddress"),
 		},
 		{
-			Keys:    bson.D{{Key: "communitySnmp", Value: 1}},
-			Options: options.Index().SetName("_communitySnmp"),
+			Keys:    bson.D{{Key: "snmpCommunity", Value: 1}},
+			Options: options.Index().SetName("_snmpCommunity"),
 		},
 		{
-			Keys:    bson.D{{Key: "portaSnmp", Value: 1}},
-			Options: options.Index().SetName("_portaSnmp"),
+			Keys:    bson.D{{Key: "snmpPort", Value: 1}},
+			Options: options.Index().SetName("_snmpPort"),
 		},
 		{
 			Keys:    bson.D{{Key: "created_at", Value: 1}},

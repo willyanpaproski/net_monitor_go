@@ -31,20 +31,20 @@ func (s *switchRedeImpl) GetById(id string) (*models.SwitchRede, error) {
 }
 
 func (s *switchRedeImpl) Create(switchRede *models.SwitchRede) error {
-	hashedPassword, err := utils.HashPassword(switchRede.SenhaAcesso)
+	hashedPassword, err := utils.HashPassword(switchRede.AccessPassword)
 	if err != nil {
 		return err
 	}
-	switchRede.SenhaAcesso = hashedPassword
+	switchRede.AccessPassword = hashedPassword
 	return s.repo.Create(switchRede)
 }
 
 func (s *switchRedeImpl) Update(id string, switchRede *models.SwitchRede) error {
-	hashedPassword, err := utils.HashPassword(switchRede.SenhaAcesso)
+	hashedPassword, err := utils.HashPassword(switchRede.AccessPassword)
 	if err != nil {
 		return err
 	}
-	switchRede.SenhaAcesso = hashedPassword
+	switchRede.AccessPassword = hashedPassword
 	return s.repo.Update(id, switchRede)
 }
 
