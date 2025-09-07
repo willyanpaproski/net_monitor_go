@@ -18,6 +18,13 @@
             "userNotFound": "Usuario no encontrado",
             "userInactive": "Usuario inactivado",
             "loginError": "Error al iniciar sesión"
+        },
+        "sideMenu": {
+            "mainItemsList": {
+                "routers": "Enrutadores",
+                "transmitters": "Transmisores",
+                "switches": "Swithes"
+            }
         }
     }
 }

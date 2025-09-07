@@ -22,21 +22,21 @@ func TransmissorFibraSeeder(
 		randomNum := rand.Intn(3)
 
 		transmissorFibra := &models.TransmissorFibra{
-			Ativo:         true,
-			Integracao:    integracoes[randomNum],
-			Nome:          fmt.Sprintf("Transmissor-%d", i),
-			Descricao:     fmt.Sprintf("Transmissor automático número %d", i),
-			UsuarioAcesso: fmt.Sprintf("admin%d", i),
-			SenhaAcesso:   "senha123",
-			EnderecoIP:    fmt.Sprintf("192.168.1.%d", i),
-			CommunitySnmp: "public",
-			PortaSnmp:     "161",
+			Active:         true,
+			Integration:    integracoes[randomNum],
+			Name:           fmt.Sprintf("Transmissor-%d", i),
+			Description:    fmt.Sprintf("Transmissor automático número %d", i),
+			AccessUser:     fmt.Sprintf("admin%d", i),
+			AccessPassword: "senha123",
+			IPAddress:      fmt.Sprintf("192.168.1.%d", i),
+			SnmpCommunity:  "public",
+			SnmpPort:       "161",
 		}
 		err := transmissorFibraService.Create(transmissorFibra)
 		if err != nil {
-			log.Fatalf("Error creating router %s: %v\n", transmissorFibra.Nome, err)
+			log.Fatalf("Error creating router %s: %v\n", transmissorFibra.Name, err)
 		} else {
-			log.Printf("Router %s created successfully", transmissorFibra.Nome)
+			log.Printf("Router %s created successfully", transmissorFibra.Name)
 		}
 	}
 

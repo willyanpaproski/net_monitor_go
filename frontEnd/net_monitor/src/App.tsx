@@ -1,8 +1,16 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import './i18n';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { PublicRoute } from './components/PublicRoute';
 import Login from "./screens/login/Login";
 import { ToastContainer } from "react-toastify";
+import Dashboard from "./screens/dashboard/Dashboard";
+import Routers from "./screens/routers/Routers";
+import Layout from "./components/Layout";
+import Transmitters from "./screens/transmitters/Transmitters";
+import Switches from "./screens/switches/Switches";
 
 export type APIError = {
   error : {
@@ -14,25 +22,85 @@ export type APIError = {
 export default function App() {
   return (
     <LanguageProvider>
-      <Router>
-        <div>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </div>
-      </Router>
-      <ToastContainer
-        position="bottom-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
+      <AuthProvider>
+        <Router>
+          <div>
+            <Routes>
+              <Route
+                path="/"
+                element={<Layout />}
+              >
+                <Route
+                  path="/routers"
+                  element={
+                    <ProtectedRoute>
+                      <Routers />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route 
+                  path="/transmitters"
+                  element={
+                    <ProtectedRoute>
+                      <Transmitters />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route 
+                  path="/switches"
+                  element={
+                    <ProtectedRoute>
+                      <Switches />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                <Route 
+                  path="/" 
+                  element={<Navigate to="/dashboard" replace />} 
+                />
+                
+                <Route 
+                  path="*" 
+                  element={<Navigate to="/dashboard" replace />} 
+                />
+              </Route>
+              <Route 
+                path="/login" 
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                } 
+              />
+              
+              <Route 
+                path="/dashboard" 
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                } 
+              />
+            </Routes>
+          </div>
+        </Router>
+        
+        <ToastContainer
+          position="bottom-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
+      </AuthProvider>
     </LanguageProvider>
   );
 }

@@ -19,5 +19,12 @@
             "userInactive": "Inactivated user",
             "loginError": "Error when logging in"
         }
+    },
+    "sideMenu": {
+        "mainItemsList": {
+            "routers": "Routers",
+            "transmitters": "Transmitters",
+            "switches": "Swithes"
+        }
     }
 }

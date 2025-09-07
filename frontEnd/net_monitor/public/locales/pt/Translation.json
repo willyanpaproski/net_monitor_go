@@ -19,5 +19,12 @@
             "userInactive": "Usuário inativado",
             "loginError": "Erro ao realizar login"
         }
+    },
+    "sideMenu": {
+        "mainItemsList": {
+            "routers": "Roteadores",
+            "transmitters": "Transmissores",
+            "switches": "Swithes"
+        }
     }
 }

@@ -1,10 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import type { UseMutationResult } from "@tanstack/react-query";
 import axios, { AxiosError } from 'axios';
 import type { LoginFields } from '../schemas/Login';
 import type { APIError } from '../App';
 import { toast } from 'react-toastify';
 import { useI18n } from '../hooks/usei18n';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 export type LoginResponse = {
     access_token: string;
@@ -21,8 +23,9 @@ export type LoginResponse = {
 }
 
 export function useLogin(): UseMutationResult<LoginResponse, unknown, LoginFields, unknown> {
-    const queryClient = useQueryClient();
     const { t } = useI18n();
+    const auth = useAuth();
+    const navigate = useNavigate();
 
     return useMutation<LoginResponse, AxiosError<APIError>, LoginFields>({
         mutationFn: async (data) => {
@@ -30,8 +33,8 @@ export function useLogin(): UseMutationResult<LoginResponse, unknown, LoginField
             return response.data;
         },
         onSuccess: (data) => {
-            localStorage.setItem('access_token', data.access_token);
-            queryClient.setQueryData(['user'], data.user);
+            auth.login(data.access_token, JSON.stringify(data.user));
+            navigate('/dashboard');
         },
         onError: (error: AxiosError<APIError>) => {
             switch (error.response?.data.error.code) {

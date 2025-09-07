@@ -20,6 +20,10 @@ func UserIndexes(collection *mongo.Collection) {
 			Options: options.Index().SetName("_active"),
 		},
 		{
+			Keys:    bson.D{{Key: "username", Value: 1}},
+			Options: options.Index().SetUnique(true).SetName("_username"),
+		},
+		{
 			Keys:    bson.D{{Key: "email", Value: 1}},
 			Options: options.Index().SetUnique(true).SetName("_email"),
 		},
