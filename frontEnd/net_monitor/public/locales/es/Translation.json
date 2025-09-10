@@ -26,5 +26,32 @@
                 "switches": "Swithes"
             }
         }
+    },
+    "dataTable": {
+        "create": "Crear",
+        "unsort": "Desordenar",
+        "filter": "Filtrar",
+        "hideColumn": "Ocultar columna",
+        "manageColumns": "Administrar columnas",
+        "sortDesc": "Orden descendente",
+        "sortAsc": "Orden ascendente",
+        "rowsPerPage": "Filas por página",
+        "exportCsv": "Exportar a csv"
+    },
+    "routers": {
+        "dataTable": {
+            "headers": {
+                "name": "Nombre",
+                "description": "Descripción",
+                "status": "Estado",
+                "integration": "Integración",
+                "ipAddress": "Dirección IP",
+                "user": "Usuario",
+                "snmpCommunity": "Community Snmp",
+                "snmpPort": "Puerto Snmp",
+                "createdAt": "Creado en",
+                "updatedAt": "Actualizado el"
+            }
+        }
     }
 }

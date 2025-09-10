@@ -1,5 +1,198 @@
+import * as React from 'react';
+import type { GridColDef } from '@mui/x-data-grid';
+import { Box, Chip } from '@mui/material';
+import GenericDataTable from '../../components/DataTable/DataTable';
+import type { DataTableItem } from '../../components/DataTable/DataTable';
+import { useDataTableFetch } from '../../api/GenericDataTableFetch';
+import { useI18n } from '../../hooks/usei18n';
+
+// Interface para o roteador baseada no seu JSON
+interface Router extends DataTableItem {
+  id: string;
+  active: boolean;
+  integration: string;
+  name: string;
+  description: string;
+  accessUser: string;
+  accessPassword: string;
+  ipAddress: string;
+  snmpCommunity: string;
+  snmpPort: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const deleteRouter = async (id: string | number): Promise<void> => {
+  const response = await fetch(`http://localhost:9090/api/roteadores/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`Erro ao excluir roteador: ${errorData || response.statusText}`);
+  }
+};
+
 export default function Routers() {
-    return(
-        <div>routers</div>
-    );
+  const { t } = useI18n();
+
+  const columns: GridColDef[] = React.useMemo(() => [
+    { 
+      field: 'name', 
+      headerName: t('routers.dataTable.headers.name'), 
+      width: 180,
+      flex: 1,
+    },
+    { 
+      field: 'description', 
+      headerName: t('routers.dataTable.headers.description'), 
+      width: 250,
+      flex: 2,
+    },
+    { 
+      field: 'active', 
+      headerName: t('routers.dataTable.headers.status'), 
+      width: 100,
+      renderCell: (params) => (
+        <Chip
+          label={params.value ? 'Ativo' : 'Inativo'}
+          color={params.value ? 'success' : 'default'}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
+    { 
+      field: 'integration', 
+      headerName: t('routers.dataTable.headers.integration'),
+      width: 120,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          color="primary"
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
+    { 
+      field: 'ipAddress', 
+      headerName: t('routers.dataTable.headers.ipAddress'),
+      width: 140,
+      renderCell: (params) => (
+        <span style={{ fontFamily: 'monospace' }}>
+          {params.value}
+        </span>
+      ),
+    },
+    { 
+      field: 'accessUser', 
+      headerName: t('routers.dataTable.headers.user'),
+      width: 120,
+    },
+    { 
+      field: 'snmpCommunity', 
+      headerName: t('routers.dataTable.headers.snmpCommunity'),
+      width: 140,
+    },
+    { 
+      field: 'snmpPort', 
+      headerName: t('routers.dataTable.headers.snmpPort'),
+      width: 110,
+      renderCell: (params) => (
+        <span style={{ fontFamily: 'monospace' }}>
+          {params.value}
+        </span>
+      ),
+    },
+    {
+      field: 'created_at',
+      headerName: t('routers.dataTable.headers.createdAt'),
+      type: 'dateTime',
+      width: 160,
+      valueGetter: (value) => {
+        if (!value || value === '1970-01-01T00:00:00Z') {
+          return null;
+        }
+        return new Date(value);
+      },
+      renderCell: (params) => {
+        if (!params.value) {
+          return <span style={{ color: '#666', fontStyle: 'italic' }}>N/A</span>;
+        }
+        return params.value.toLocaleDateString('pt-BR');
+      },
+    },
+    {
+      field: 'updated_at',
+      headerName: t('routers.dataTable.headers.updatedAt'),
+      type: 'dateTime',
+      width: 160,
+      valueGetter: (value) => {
+        if (!value || value === '1970-01-01T00:00:00Z') {
+          return null;
+        }
+        return new Date(value);
+      },
+      renderCell: (params) => {
+        if (!params.value) {
+          return <span style={{ color: '#666', fontStyle: 'italic' }}>N/A</span>;
+        }
+        return params.value.toLocaleDateString('pt-BR');
+      },
+    },
+  ], []);
+
+  const handleDeleteSuccess = React.useCallback((router: Router) => {
+    console.log(`Roteador ${router.name} foi excluído com sucesso!`);
+    alert(`Roteador "${router.name}" excluído com sucesso!`);
+  }, []);
+
+  const handleDeleteError = React.useCallback((error: Error, router: Router) => {
+    console.error(`Erro ao excluir ${router.name}:`, error.message);
+    alert(`Erro ao excluir roteador "${router.name}": ${error.message}`);
+  }, []);
+
+  const handleCreateClick = React.useCallback(() => {
+    console.log('Criar novo roteador');
+  }, []);
+
+  const handleEditClick = React.useCallback((router: Router) => {
+    console.log('Editar roteador:', router);
+  }, []);
+
+  const handleRowClick = React.useCallback((router: Router) => {
+    console.log('Ver detalhes do roteador:', router);
+  }, []);
+
+  return (
+    <Box sx={{
+      mt: 3,
+      ml: 2,
+      flex: 1,
+      width: "calc(100% - 240px)"
+    }}>
+      <GenericDataTable<Router>
+        title="Roteadores"
+        columns={columns}
+        fetchData={useDataTableFetch<Router>('http://localhost:9090/api/roteadores')}
+        deleteItem={deleteRouter}
+        basePath="/routers"
+        enableCreate={true}
+        enableEdit={true}
+        enableDelete={true}
+        enableRowClick={true}
+        initialPageSize={10}
+        pageSizeOptions={[5, 10, 25, 50]}
+        onCreateClick={handleCreateClick}
+        onEditClick={handleEditClick}
+        onRowClick={handleRowClick}
+        onDeleteSuccess={handleDeleteSuccess}
+        onDeleteError={handleDeleteError}
+      />
+    </Box>
+  );
 }

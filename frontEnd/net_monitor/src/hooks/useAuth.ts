@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const token = localStorage.getItem('access_token');
 
   useEffect(() => {
     checkAuthStatus();
@@ -41,6 +42,7 @@ export const useAuth = () => {
   return {
     isAuthenticated,
     isLoading,
+    token,
     login,
     logout,
     checkAuthStatus
