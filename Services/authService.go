@@ -214,7 +214,7 @@ func (s *authServiceImpl) generateLoginResponse(user *models.User) (*models.Logi
 		UsuarioID:  user.ID,
 		Token:      refreshTokenStr,
 		ExpiresAt:  time.Now().Add(7 * 24 * time.Hour),
-		Created_At: time.Now(),
+		Created_At: primitive.NewDateTimeFromTime(time.Now()),
 	}
 
 	if err := s.refreshTokenRepo.Create(&refreshToken); err != nil {

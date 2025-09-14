@@ -23,7 +23,7 @@ type RefreshToken struct {
 	UsuarioID  primitive.ObjectID `bson:"usuarioId" json:"usuarioId"`
 	Token      string             `bson:"token" json:"token"`
 	ExpiresAt  time.Time          `bson:"expiresAt" json:"expiresAt"`
-	Created_At time.Time          `bson:"createdAt" json:"createdAt"`
+	Created_At primitive.DateTime `bson:"createdAt" json:"createdAt"`
 }
 
 type LoginRequest struct {

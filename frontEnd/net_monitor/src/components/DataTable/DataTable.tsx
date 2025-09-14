@@ -9,7 +9,6 @@ import {
   DataGrid,
   GridActionsCellItem,
   gridClasses,
-  GridColumnMenuManageItem,
 } from '@mui/x-data-grid';
 import type { GridColDef, GridFilterModel, GridPaginationModel, GridSortModel, GridEventListener } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
@@ -41,7 +40,7 @@ export interface DataTableProps<T extends DataTableItem> {
     sortModel: GridSortModel;
     filterModel: GridFilterModel;
   }) => Promise<DataTableResponse<T>>;
-  deleteItem?: (id: string | number) => Promise<void>;
+  deleteItem?: (id: string) => Promise<void>;
   
   basePath: string;
   
@@ -244,7 +243,7 @@ export default function GenericDataTable<T extends DataTableItem>({
       if (confirmed && deleteItem) {
         setIsLoading(true);
         try {
-          await deleteItem(item.id);
+          await deleteItem(String(item.id));
           
           if (onDeleteSuccess) {
             onDeleteSuccess(item);

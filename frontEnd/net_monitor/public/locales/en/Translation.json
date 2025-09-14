@@ -51,7 +51,45 @@
                 "snmpPort": "Snmp Port",
                 "createdAt": "Created at",
                 "updatedAt": "Updated at"
-            }
+            },
+            "deleteSuccess": "Router deleted successfully",
+            "deleteError": "Error deleting router"
+        }
+    },
+    "transmitters": {
+        "dataTable": {
+            "headers": {
+                "name": "Name",
+                "description": "Description",
+                "status": "Status",
+                "integration": "Integration",
+                "ipAddress": "IP Address",
+                "user": "User",
+                "snmpCommunity": "Snmp Community",
+                "snmpPort": "Snmp Port",
+                "createdAt": "Created at",
+                "updatedAt": "Updated at"
+            },
+            "deleteSuccess": "Transmitter deleted successfully",
+            "deleteError": "Error deleting transmitter"
+        }
+    },
+    "switches": {
+        "dataTable": {
+            "headers": {
+                "name": "Name",
+                "description": "Description",
+                "status": "Status",
+                "integration": "Integration",
+                "ipAddress": "IP Address",
+                "user": "User",
+                "snmpCommunity": "Snmp Community",
+                "snmpPort": "Snmp Port",
+                "createdAt": "Created at",
+                "updatedAt": "Updated at"
+            },
+            "deleteSuccess": "Switch deleted successfully",
+            "deleteError": "Error deleting switch"
         }
     }
 }

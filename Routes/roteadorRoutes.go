@@ -15,7 +15,7 @@ func SetupRoteadorRoutes(
 ) {
 	api := router.Group("/api")
 	{
-		roteadores := api.Group("/roteadores")
+		roteadores := api.Group("/routers")
 		roteadores.Use(middlewares.AuthMiddleware(authService))
 		{
 			roteadores.GET("", roteadorController.GetAllRoteadores)

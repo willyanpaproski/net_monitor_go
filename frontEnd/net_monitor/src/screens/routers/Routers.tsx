@@ -5,8 +5,9 @@ import GenericDataTable from '../../components/DataTable/DataTable';
 import type { DataTableItem } from '../../components/DataTable/DataTable';
 import { useDataTableFetch } from '../../api/GenericDataTableFetch';
 import { useI18n } from '../../hooks/usei18n';
+import { useDeleteRouter } from '../../api/Routers';
+import { toast } from 'react-toastify';
 
-// Interface para o roteador baseada no seu JSON
 interface Router extends DataTableItem {
   id: string;
   active: boolean;
@@ -22,35 +23,22 @@ interface Router extends DataTableItem {
   updated_at: string;
 }
 
-const deleteRouter = async (id: string | number): Promise<void> => {
-  const response = await fetch(`http://localhost:9090/api/roteadores/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`Erro ao excluir roteador: ${errorData || response.statusText}`);
-  }
-};
-
 export default function Routers() {
   const { t } = useI18n();
+  const deleteRouterMutation = useDeleteRouter();
 
   const columns: GridColDef[] = React.useMemo(() => [
     { 
       field: 'name', 
       headerName: t('routers.dataTable.headers.name'), 
       width: 180,
-      flex: 1,
+      flex: 0,
     },
     { 
       field: 'description', 
       headerName: t('routers.dataTable.headers.description'), 
       width: 250,
-      flex: 2,
+      flex: 0,
     },
     { 
       field: 'active', 
@@ -123,7 +111,7 @@ export default function Routers() {
         if (!params.value) {
           return <span style={{ color: '#666', fontStyle: 'italic' }}>N/A</span>;
         }
-        return params.value.toLocaleDateString('pt-BR');
+        return params.value.toLocaleString('pt-BR');
       },
     },
     {
@@ -141,20 +129,14 @@ export default function Routers() {
         if (!params.value) {
           return <span style={{ color: '#666', fontStyle: 'italic' }}>N/A</span>;
         }
-        return params.value.toLocaleDateString('pt-BR');
+        return params.value.toLocaleString('pt-BR');
       },
     },
   ], []);
 
-  const handleDeleteSuccess = React.useCallback((router: Router) => {
-    console.log(`Roteador ${router.name} foi excluído com sucesso!`);
-    alert(`Roteador "${router.name}" excluído com sucesso!`);
-  }, []);
-
-  const handleDeleteError = React.useCallback((error: Error, router: Router) => {
-    console.error(`Erro ao excluir ${router.name}:`, error.message);
-    alert(`Erro ao excluir roteador "${router.name}": ${error.message}`);
-  }, []);
+  const deleteRouter = React.useCallback(async (id: string) => {
+    return deleteRouterMutation.mutateAsync(id);
+  }, [deleteRouterMutation]);
 
   const handleCreateClick = React.useCallback(() => {
     console.log('Criar novo roteador');
@@ -178,7 +160,7 @@ export default function Routers() {
       <GenericDataTable<Router>
         title="Roteadores"
         columns={columns}
-        fetchData={useDataTableFetch<Router>('http://localhost:9090/api/roteadores')}
+        fetchData={useDataTableFetch<Router>('http://localhost:9090/api/routers')}
         deleteItem={deleteRouter}
         basePath="/routers"
         enableCreate={true}
@@ -190,8 +172,8 @@ export default function Routers() {
         onCreateClick={handleCreateClick}
         onEditClick={handleEditClick}
         onRowClick={handleRowClick}
-        onDeleteSuccess={handleDeleteSuccess}
-        onDeleteError={handleDeleteError}
+        onDeleteSuccess={() => toast.success(t('routers.dataTable.deleteSuccess'))}
+        onDeleteError={() => toast.error(t('routers.dataTable.deleteError'))}
       />
     </Box>
   );

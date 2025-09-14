@@ -51,7 +51,45 @@
                 "snmpPort": "Puerto Snmp",
                 "createdAt": "Creado en",
                 "updatedAt": "Actualizado el"
-            }
+            },
+            "deleteSuccess": "Enrutador eliminado exitosamente",
+            "deleteError": "Error al eliminar el enrutador"
+        }
+    },
+    "transmitters": {
+        "dataTable": {
+            "headers": {
+                "name": "Nombre",
+                "description": "Descripción",
+                "status": "Estado",
+                "integration": "Integración",
+                "ipAddress": "Dirección IP",
+                "user": "Usuario",
+                "snmpCommunity": "Community Snmp",
+                "snmpPort": "Puerto Snmp",
+                "createdAt": "Creado en",
+                "updatedAt": "Actualizado el"
+            },
+            "deleteSuccess": "Transmisor eliminado exitosamente",
+            "deleteError": "Error al eliminar el transmisor"
+        }
+    },
+    "switches": {
+        "dataTable": {
+            "headers": {
+                "name": "Nombre",
+                "description": "Descripción",
+                "status": "Estado",
+                "integration": "Integración",
+                "ipAddress": "Dirección IP",
+                "user": "Usuario",
+                "snmpCommunity": "Community Snmp",
+                "snmpPort": "Puerto Snmp",
+                "createdAt": "Creado en",
+                "updatedAt": "Actualizado el"
+            },
+            "deleteSuccess": "Switch eliminado con éxito",
+            "deleteError": "Error al eliminar el switch"
         }
     }
 }

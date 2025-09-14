@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import type { APIError } from "../App";
-import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
+import axios from "axios";
 
-export type Router = {
+export type Transmitter = {
     id: string;
     accessPassword: string;
     accessUser: string;
@@ -19,13 +19,13 @@ export type Router = {
     created_at: Date;
 }
 
-export function useRouters(): UseQueryResult<Router[], AxiosError<APIError>> {
+export function useTransmitters(): UseQueryResult<Transmitter[], AxiosError<APIError>> {
     const { token } = useAuth();
 
-    return useQuery<Router[], AxiosError<APIError>>({
-        queryKey: ['routers'],
+    return useQuery<Transmitter[], AxiosError<APIError>>({
+        queryKey: ['transmitters'],
         queryFn: async () => {
-            const response = await axios.get('http://localhost:9090/api/routers', {
+            const response = await axios.get('http://localhost:9090/api/transmitters', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -37,20 +37,20 @@ export function useRouters(): UseQueryResult<Router[], AxiosError<APIError>> {
     });
 }
 
-export function useDeleteRouter() {
+export function useDeleteTransmitter() {
     const queryClient = useQueryClient();
     const { token } = useAuth();
 
     return useMutation<void, AxiosError<APIError>, string>({
-        mutationFn: async (routerId: string) => {
-            await axios.delete(`http://localhost:9090/api/routers/${routerId}`, {
+        mutationFn: async (transmitterId: string) => {
+            await axios.delete(`http://localhost:9090/api/transmitters/${transmitterId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["routers"] });
+            queryClient.invalidateQueries({ queryKey: ["transmitters"] });
         }
     });
 }

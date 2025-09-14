@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import type { APIError } from "../App";
-import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
+import axios from "axios";
 
-export type Router = {
+export type NetworkSwitch = {
     id: string;
     accessPassword: string;
     accessUser: string;
@@ -19,38 +19,38 @@ export type Router = {
     created_at: Date;
 }
 
-export function useRouters(): UseQueryResult<Router[], AxiosError<APIError>> {
+export function useSwitch(): UseQueryResult<NetworkSwitch[], AxiosError<APIError>> {
     const { token } = useAuth();
 
-    return useQuery<Router[], AxiosError<APIError>>({
-        queryKey: ['routers'],
+    return useQuery<NetworkSwitch[], AxiosError<APIError>>({
+        queryKey: ['switches'],
         queryFn: async () => {
-            const response = await axios.get('http://localhost:9090/api/routers', {
+            const response = await axios.get('http://localhost:9090/api/switches', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            return response.data
+            return response.data;
         },
         staleTime: 1000 * 60 * 5,
         retry: 1
     });
 }
 
-export function useDeleteRouter() {
+export function useDeleteSwitch() {
     const queryClient = useQueryClient();
     const { token } = useAuth();
 
     return useMutation<void, AxiosError<APIError>, string>({
-        mutationFn: async (routerId: string) => {
-            await axios.delete(`http://localhost:9090/api/routers/${routerId}`, {
+        mutationFn: async (switchId) => {
+            await axios.delete(`http://localhost:9090/api/switches/${switchId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["routers"] });
+            queryClient.invalidateQueries({ queryKey: ["switches"] })
         }
     });
 }

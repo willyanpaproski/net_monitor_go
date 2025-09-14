@@ -15,7 +15,7 @@ func SetupTransmissorFibraRoutes(
 ) {
 	api := router.Group("/api")
 	{
-		transmissoresFibra := api.Group("/transmissoresFibra")
+		transmissoresFibra := api.Group("/transmitters")
 		transmissoresFibra.Use(middlewares.AuthMiddleware(authService))
 		{
 			transmissoresFibra.GET("", transmissorFibraController.GetAllTransmissoresFibra)

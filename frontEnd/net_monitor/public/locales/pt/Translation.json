@@ -51,7 +51,45 @@
                 "snmpPort": "Porta Snmp",
                 "createdAt": "Criado em",
                 "updatedAt": "Atualizado em"
-            }
+            },
+            "deleteSuccess": "Roteador deletado com sucesso",
+            "deleteError": "Erro ao deletar roteador"
+        }
+    },
+    "transmitters": {
+        "dataTable": {
+            "headers": {
+                "name": "Nome",
+                "description": "Descrição",
+                "status": "Status",
+                "integration": "Integração",
+                "ipAddress": "Endereço IP",
+                "user": "Usuário",
+                "snmpCommunity": "Community Snmp",
+                "snmpPort": "Porta Snmp",
+                "createdAt": "Criado em",
+                "updatedAt": "Atualizado em"
+            },
+            "deleteSuccess": "Transmissor deletado com sucesso",
+            "deleteError": "Erro ao deletar transmissor"
+        }
+    },
+    "switches": {
+        "dataTable": {
+            "headers": {
+                "name": "Nome",
+                "description": "Descrição",
+                "status": "Status",
+                "integration": "Integração",
+                "ipAddress": "Endereço IP",
+                "user": "Usuário",
+                "snmpCommunity": "Community Snmp",
+                "snmpPort": "Porta Snmp",
+                "createdAt": "Criado em",
+                "updatedAt": "Atualizado em"
+            },
+            "deleteSuccess": "Switch deletado com sucesso",
+            "deleteError": "Erro ao deletar switch"
         }
     }
 }
