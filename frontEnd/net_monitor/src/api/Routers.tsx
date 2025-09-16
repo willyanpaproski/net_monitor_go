@@ -54,3 +54,9 @@ export function useDeleteRouter() {
         }
     });
 }
+
+export function useCreateRouter() {
+    const { token } = useAuth();
+
+    return useMutation
+}

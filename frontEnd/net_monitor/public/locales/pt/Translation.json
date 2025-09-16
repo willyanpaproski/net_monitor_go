@@ -54,6 +54,19 @@
             },
             "deleteSuccess": "Roteador deletado com sucesso",
             "deleteError": "Erro ao deletar roteador"
+        },
+        "createForm": {
+            "fields": {
+                "name": "Nome",
+                "integration": "Integração",
+                "active": "Ativo",
+                "description": "Descrição",
+                "ipAddress": "Endereço IP",
+                "accessUser": "Usuário de acesso",
+                "accessPassword": "Senha de acesso",
+                "snmpCommunity": "Community Snmp",
+                "snmpPort": "Porta Snmp"
+            }
         }
     },
     "transmitters": {

@@ -54,6 +54,19 @@
             },
             "deleteSuccess": "Enrutador eliminado exitosamente",
             "deleteError": "Error al eliminar el enrutador"
+        },
+        "createForm": {
+            "fields": {
+                "name": "Nombre",
+                "integration": "Integración",
+                "active": "Activo",
+                "description": "Descripción",
+                "ipAddress": "Dirección IP",
+                "accessUser": "Usuario de acceso",
+                "accessPassword": "Contraseña de acceso",
+                "snmpCommunity": "Comunidad Snmp",
+                "snmpPort": "Puerto Snmp"
+            }
         }
     },
     "transmitters": {

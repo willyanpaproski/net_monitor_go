@@ -1,6 +1,8 @@
 package middlewares
 
 import (
+	"bytes"
+	"io"
 	"log"
 	models "net_monitor/Models"
 	services "net_monitor/Services"
@@ -12,7 +14,21 @@ import (
 
 func RequestLoggerMiddleware(logService services.RequestLogService) gin.HandlerFunc {
 	return func(goGin *gin.Context) {
+		if goGin.Request.Method == "GET" || goGin.Request.Method == "OPTIONS" {
+			return
+		}
+
 		start := time.Now()
+
+		var bodyBytes []byte
+		var bodyString string
+
+		if goGin.Request.Body != nil {
+			bodyBytes, _ = io.ReadAll(goGin.Request.Body)
+			bodyString = string(bodyBytes)
+
+			goGin.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		}
 
 		goGin.Next()
 
@@ -25,6 +41,7 @@ func RequestLoggerMiddleware(logService services.RequestLogService) gin.HandlerF
 			Duration:   duration.Microseconds(),
 			ClientIP:   goGin.Request.RemoteAddr,
 			UserAgent:  goGin.Request.UserAgent(),
+			Body:       bodyString,
 			Timestamp:  primitive.NewDateTimeFromTime(start),
 		}
 

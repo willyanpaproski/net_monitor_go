@@ -7,6 +7,7 @@ import { useDataTableFetch } from '../../api/GenericDataTableFetch';
 import { useI18n } from '../../hooks/usei18n';
 import { useDeleteRouter } from '../../api/Routers';
 import { toast } from 'react-toastify';
+import { ModalCreateRouter } from './components/ModalCreateRouter';
 
 interface Router extends DataTableItem {
   id: string;
@@ -175,6 +176,7 @@ export default function Routers() {
         onDeleteSuccess={() => toast.success(t('routers.dataTable.deleteSuccess'))}
         onDeleteError={() => toast.error(t('routers.dataTable.deleteError'))}
       />
+      <ModalCreateRouter />
     </Box>
   );
 }

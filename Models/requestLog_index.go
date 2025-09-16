@@ -40,6 +40,10 @@ func RequestLogIndexes(collection *mongo.Collection) {
 			Options: options.Index().SetName("_userAgent"),
 		},
 		{
+			Keys:    bson.D{{Key: "body", Value: 1}},
+			Options: options.Index().SetName("_body"),
+		},
+		{
 			Keys:    bson.D{{Key: "timeStamp", Value: 1}},
 			Options: options.Index().SetName("_timeStamp"),
 		},
