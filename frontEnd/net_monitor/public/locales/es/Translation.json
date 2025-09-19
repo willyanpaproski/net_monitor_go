@@ -66,7 +66,18 @@
                 "accessPassword": "Contraseña de acceso",
                 "snmpCommunity": "Comunidad Snmp",
                 "snmpPort": "Puerto Snmp"
+            },
+            "successMessages": {
+                "created": "¡El enrutador se registró correctamente!"
+            },
+            "errors": {
+                "error": "Error al registrar el enrutador",
+                "duplicatedRouterName": "Ya existe un enrutador con el nombre especificado"
             }
+        },
+        "schema": {
+            "passwordLength": "La contraseña debe contener al menos 6 caracteres",
+            "invalidIpAddress": "Dirección IP no válida"
         }
     },
     "transmitters": {

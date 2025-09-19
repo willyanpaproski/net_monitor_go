@@ -3,6 +3,10 @@ import type { AxiosError } from "axios";
 import type { APIError } from "../App";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
+import type { RouterFields } from "../schemas/Router";
+import { toast } from "react-toastify";
+import { useI18n } from "../hooks/usei18n";
+import { useNavigate } from "react-router-dom";
 
 export type Router = {
     id: string;
@@ -17,6 +21,10 @@ export type Router = {
     snmpPort: string;
     updated_at: Date;
     created_at: Date;
+}
+
+export type CreateRouterData = RouterFields & {
+    successEvent?: () => void;
 }
 
 export function useRouters(): UseQueryResult<Router[], AxiosError<APIError>> {
@@ -56,7 +64,32 @@ export function useDeleteRouter() {
 }
 
 export function useCreateRouter() {
+    const { t } = useI18n();
     const { token } = useAuth();
+    const navigate = useNavigate();
 
-    return useMutation
+    return useMutation<Partial<Router>, AxiosError<APIError>, CreateRouterData>({
+        mutationFn: async (data: CreateRouterData) => {
+            const response = await axios.post('http://localhost:9090/api/routers', data, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data
+        },
+        onSuccess: (_data, variables) => {
+            toast.success(t('routers.createForm.successMessages.created'));
+            if (variables.successEvent) {
+                variables.successEvent();
+            }
+            navigate('/routers');
+        },
+        onError: (error: AxiosError<APIError>) => {
+            if (error.response?.data.error.code === "DUPLICATED_ROUTER_NAME") {
+                toast.error(t('routers.createForm.errors.duplicatedRouterName'));
+                return;
+            }
+            toast.error(t('routers.createForm.errors.error'));
+        }
+    });
 }

@@ -45,9 +45,13 @@ func (c *RoteadorController) CreateRoteador(goGin *gin.Context) {
 		goGin.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
-	errCreate := c.Service.Create(&req)
+	errCreate, apiErr := c.Service.Create(&req)
 	if errCreate != nil {
 		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errCreate.Error()})
+		return
+	}
+	if apiErr != nil {
+		goGin.JSON(http.StatusBadRequest, gin.H{"error": apiErr})
 		return
 	}
 	goGin.JSON(http.StatusCreated, req)
