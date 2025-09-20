@@ -67,6 +67,7 @@
                 "snmpCommunity": "Community Snmp",
                 "snmpPort": "Porta Snmp"
             },
+            "create": "Cadastrar",
             "successMessages": {
                 "created": "Roteador cadastrado com sucesso!"
             },

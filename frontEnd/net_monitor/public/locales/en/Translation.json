@@ -67,6 +67,7 @@
                 "snmpCommunity": "Snmp community",
                 "snmpPort": "Snmp port"
             },
+            "create": "Register",
             "successMessages": {
                 "created": "Router registered successfully!"
             },

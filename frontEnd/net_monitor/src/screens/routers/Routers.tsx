@@ -27,6 +27,7 @@ interface Router extends DataTableItem {
 export default function Routers() {
   const { t } = useI18n();
   const deleteRouterMutation = useDeleteRouter();
+  const [isCreateModalVisible, setIsCreateModalVisible] = React.useState(false);
 
   const columns: GridColDef[] = React.useMemo(() => [
     { 
@@ -139,10 +140,6 @@ export default function Routers() {
     return deleteRouterMutation.mutateAsync(id);
   }, [deleteRouterMutation]);
 
-  const handleCreateClick = React.useCallback(() => {
-    console.log('Criar novo roteador');
-  }, []);
-
   const handleEditClick = React.useCallback((router: Router) => {
     console.log('Editar roteador:', router);
   }, []);
@@ -170,13 +167,13 @@ export default function Routers() {
         enableRowClick={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 25, 50]}
-        onCreateClick={handleCreateClick}
+        onCreateClick={() => setIsCreateModalVisible(true)}
         onEditClick={handleEditClick}
         onRowClick={handleRowClick}
         onDeleteSuccess={() => toast.success(t('routers.dataTable.deleteSuccess'))}
         onDeleteError={() => toast.error(t('routers.dataTable.deleteError'))}
       />
-      <ModalCreateRouter />
+      <ModalCreateRouter isVisible={isCreateModalVisible} setIsVisible={setIsCreateModalVisible} />
     </Box>
   );
 }

@@ -394,6 +394,9 @@ export default function GenericDataTable<T extends DataTableItem>({
               baseIconButton: {
                 size: 'small',
               },
+              toolbar: {
+                printOptions: { disableToolbarButton: true }
+              }
             }}
           />
         )}

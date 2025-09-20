@@ -67,6 +67,7 @@
                 "snmpCommunity": "Comunidad Snmp",
                 "snmpPort": "Puerto Snmp"
             },
+            "create": "Registro",
             "successMessages": {
                 "created": "¡El enrutador se registró correctamente!"
             },
