@@ -1,31 +1,18 @@
 import type { GridColDef } from "@mui/x-data-grid";
-import type { DataTableItem } from "../../components/DataTable/DataTable";
 import { useI18n } from "../../hooks/usei18n";
 import * as React from "react";
 import { Box, Chip } from "@mui/material";
 import GenericDataTable from "../../components/DataTable/DataTable";
 import { useDataTableFetch } from "../../api/GenericDataTableFetch";
-import { useDeleteTransmitter } from "../../api/Transmitters";
+import { useDeleteTransmitter, type Transmitter } from "../../api/Transmitters";
 import { toast } from "react-toastify";
-
-interface Transmitter extends DataTableItem {
-    id: string;
-    accessPassword: string;
-    accessUser: string;
-    active: boolean;
-    description: string;
-    integration: string;
-    ipAddress: string;
-    name: string;
-    snmpCommunity: string;
-    snmoPort: string;
-    updated_at: Date;
-    created_at: Date;
-}
+import { ModalCreateEditTransmitter } from "./components/ModalCreateEditTransmitter";
 
 export default function Transmitters() {
     const { t } = useI18n();
     const deleteTransmitterMutation = useDeleteTransmitter();
+    const [isCreateModalVisible, setIsCreateModalVisible] = React.useState(false);
+    const [rowData, setRowData] = React.useState<Transmitter | undefined>(undefined);
 
     const columns: GridColDef[] = React.useMemo(() => [
         {
@@ -157,9 +144,18 @@ export default function Transmitters() {
                 enableRowClick={true}
                 initialPageSize={10}
                 pageSizeOptions={[5, 10, 25, 50]}
+                onCreateClick={() => {
+                    setRowData(undefined);
+                    setIsCreateModalVisible(true);
+                }}
+                onEditClick={(item) => {
+                    setRowData(item);
+                    setIsCreateModalVisible(true);
+                }}
                 onDeleteSuccess={() => toast.success(t('transmitters.dataTable.deleteSuccess'))}
                 onDeleteError={() => toast.error(t('transmitters.dataTable.deleteError'))}
             />
+            <ModalCreateEditTransmitter transmitter={rowData} isVisible={isCreateModalVisible} setIsVisible={setIsCreateModalVisible} />
         </Box>
     );
 }

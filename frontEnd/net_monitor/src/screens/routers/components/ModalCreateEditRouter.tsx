@@ -3,34 +3,56 @@ import AddBox from "@mui/icons-material/AddBox";
 import Close from "@mui/icons-material/Close";
 import { useI18n } from "../../../hooks/usei18n";
 import { useForm } from "../../../hooks/useForm";
-import { useCreateRouter } from "../../../api/Routers";
+import { useCreateRouter, useEditRouter, type Router } from "../../../api/Routers";
 import { useRouterSchema } from "../../../schemas/Router";
 import { useEffect } from "react";
 import { ModalOverlay } from "../../../components/ModalOverlay";
 import { ModalContainer } from "../../../components/ModalContainer";
 import { FormGrid } from "../../../components/FormGrid";
 
-type ModalCreateRouterProps = {
+type ModalCreateEditRouterProps = {
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    router?: Router | undefined;
 }
 
-export function ModalCreateRouter({ isVisible, setIsVisible }: ModalCreateRouterProps) {
+const defaultFormData = {
+    active: true,
+    integration: "mikrotik" as const,
+    name: "",
+    ipAddress: "",
+    accessUser: "",
+    accessPassword: "",
+    snmpCommunity: "",
+    snmpPort: "",
+    description: ""
+};
+
+export function ModalCreateEditRouter({ isVisible, setIsVisible, router }: ModalCreateEditRouterProps) {
     const { t } = useI18n();
     const createRouterMutation = useCreateRouter();
+    const editRouterMutation = useEditRouter();
     const routerSchema = useRouterSchema();
 
-    const { formData, handleChange, handleSelectChange, handleSwitchChange, isValid, errors, setDefault } = useForm({
-        active: true,
-        integration: "mikrotik",
-        name: "",
-        ipAddress: "",
-        accessUser: "",
-        accessPassword: "",
-        snmpCommunity: "",
-        snmpPort: "",
-        description: ""
-    }, ["name", "integration", "ipAddress", "snmpCommunity", "snmpPort"], routerSchema);
+    const { formData, setFormData, handleChange, handleSelectChange, handleSwitchChange, isValid, errors, setDefault } = useForm(defaultFormData, ["name", "integration", "ipAddress", "snmpCommunity", "snmpPort"], routerSchema);
+
+    useEffect(() => {
+        if (router) {
+            setFormData ({
+                active: router.active,
+                integration: router.integration,
+                name: router.name,
+                ipAddress: router.ipAddress,
+                accessUser: router.accessUser,
+                accessPassword: router.accessPassword,
+                snmpCommunity: router.snmpCommunity,
+                snmpPort: router.snmpPort,
+                description: router.description
+            });
+        } else {
+            setFormData(defaultFormData);
+        }
+    }, [router, setFormData]);
 
     useEffect(() => {
         if (createRouterMutation.isSuccess) {
@@ -38,7 +60,12 @@ export function ModalCreateRouter({ isVisible, setIsVisible }: ModalCreateRouter
             createRouterMutation.reset();
             setIsVisible(false);
         }
-    }, [createRouterMutation.isSuccess]);
+        if (editRouterMutation.isSuccess) {
+            setDefault();
+            editRouterMutation.reset();
+            setIsVisible(false);
+        }
+    }, [createRouterMutation.isSuccess, editRouterMutation.isSuccess]);
 
     if (!isVisible) return null;
 
@@ -176,9 +203,9 @@ export function ModalCreateRouter({ isVisible, setIsVisible }: ModalCreateRouter
                             }
                         }}
                         variant="contained"
-                        onClick={() => createRouterMutation.mutate(formData)}
+                        onClick={() => router ? editRouterMutation.mutate({...formData, id: router.id}) : createRouterMutation.mutate(formData)}
                     >
-                        {t('routers.createForm.create')}
+                        {router ? t('routers.createForm.save') : t('routers.createForm.create')}
                     </Button>
                 </Grid>
             </ModalContainer>

@@ -68,11 +68,14 @@
                 "snmpPort": "Snmp port"
             },
             "create": "Register",
+            "save": "Save",
             "successMessages": {
-                "created": "Router registered successfully!"
+                "created": "Router registered successfully!",
+                "saved": "Router saved successfully!"
             },
             "errors": {
                 "error": "Error registering router",
+                "errorSaving": "Error saving router",
                 "duplicatedRouterName": "A router with the given name already exists"
             }
         },
@@ -97,6 +100,34 @@
             },
             "deleteSuccess": "Transmitter deleted successfully",
             "deleteError": "Error deleting transmitter"
+        },
+        "createForm": {
+            "fields": {
+                "name": "Name",
+                "integration": "Integration",
+                "active": "Active",
+                "description": "Description",
+                "ipAddress": "IP address",
+                "accessUser": "Access user",
+                "accessPassword": "Access password",
+                "snmpCommunity": "Snmp community",
+                "snmpPort": "Snmp port"
+            },
+            "create": "Register",
+            "save": "Save",
+            "successMessages": {
+                "created": "Transmitter registered successfully!",
+                "saved": "Transmitter saved successfully!"
+            },
+            "errors": {
+                "error": "Error registering transmitter",
+                "errorSaving": "Error saving transmitter",
+                "duplicatedTransmitterName": "A transmitter with the given name already exists"
+            }
+        },
+        "schema": {
+            "passwordLength": "Password must contain at least 6 characters",
+            "invalidIpAddress": "Invalid IP address"
         }
     },
     "switches": {
@@ -115,6 +146,31 @@
             },
             "deleteSuccess": "Switch deleted successfully",
             "deleteError": "Error deleting switch"
+        },
+        "createForm": {
+            "fields": {
+                "name": "Name",
+                "integration": "Integration",
+                "active": "Active",
+                "description": "Description",
+                "ipAddress": "IP address",
+                "accessUser": "Access user",
+                "accessPassword": "Access password",
+                "snmpCommunity": "Snmp community",
+                "snmpPort": "Snmp port"
+            },
+            "create": "Register",
+            "successMessages": {
+                "created": "Switch registered successfully!"
+            },
+            "errors": {
+                "error": "Error registering switch",
+                "duplicatedTransmitterName": "A switch with the given name already exists"
+            }
+        },
+        "schema": {
+            "passwordLength": "Password must contain at least 6 characters",
+            "invalidIpAddress": "Invalid IP address"
         }
     }
 }

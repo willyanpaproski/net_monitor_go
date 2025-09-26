@@ -2,32 +2,18 @@ import * as React from 'react';
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Chip } from '@mui/material';
 import GenericDataTable from '../../components/DataTable/DataTable';
-import type { DataTableItem } from '../../components/DataTable/DataTable';
 import { useDataTableFetch } from '../../api/GenericDataTableFetch';
 import { useI18n } from '../../hooks/usei18n';
 import { useDeleteRouter } from '../../api/Routers';
 import { toast } from 'react-toastify';
-import { ModalCreateRouter } from './components/ModalCreateRouter';
-
-interface Router extends DataTableItem {
-  id: string;
-  active: boolean;
-  integration: string;
-  name: string;
-  description: string;
-  accessUser: string;
-  accessPassword: string;
-  ipAddress: string;
-  snmpCommunity: string;
-  snmpPort: string;
-  created_at: string;
-  updated_at: string;
-}
+import { ModalCreateEditRouter } from './components/ModalCreateEditRouter';
+import type { Router } from '../../api/Routers'
 
 export default function Routers() {
   const { t } = useI18n();
   const deleteRouterMutation = useDeleteRouter();
-  const [isCreateModalVisible, setIsCreateModalVisible] = React.useState(false);
+  const [isCreateEditModalVisible, setIsCreateEditModalVisible] = React.useState(false);
+  const [rowData, setRowData] = React.useState<Router | undefined>(undefined);
 
   const columns: GridColDef[] = React.useMemo(() => [
     { 
@@ -140,10 +126,6 @@ export default function Routers() {
     return deleteRouterMutation.mutateAsync(id);
   }, [deleteRouterMutation]);
 
-  const handleEditClick = React.useCallback((router: Router) => {
-    console.log('Editar roteador:', router);
-  }, []);
-
   const handleRowClick = React.useCallback((router: Router) => {
     console.log('Ver detalhes do roteador:', router);
   }, []);
@@ -167,13 +149,19 @@ export default function Routers() {
         enableRowClick={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 25, 50]}
-        onCreateClick={() => setIsCreateModalVisible(true)}
-        onEditClick={handleEditClick}
+        onCreateClick={() => {
+          setRowData(undefined);
+          setIsCreateEditModalVisible(true);
+        }}
+        onEditClick={(item) => {
+          setRowData(item);
+          setIsCreateEditModalVisible(true);
+        }}
         onRowClick={handleRowClick}
         onDeleteSuccess={() => toast.success(t('routers.dataTable.deleteSuccess'))}
         onDeleteError={() => toast.error(t('routers.dataTable.deleteError'))}
       />
-      <ModalCreateRouter isVisible={isCreateModalVisible} setIsVisible={setIsCreateModalVisible} />
+      <ModalCreateEditRouter router={rowData} isVisible={isCreateEditModalVisible} setIsVisible={setIsCreateEditModalVisible} />
     </Box>
   );
 }

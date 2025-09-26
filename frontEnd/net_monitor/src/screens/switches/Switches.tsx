@@ -7,6 +7,7 @@ import GenericDataTable from "../../components/DataTable/DataTable";
 import { useDataTableFetch } from "../../api/GenericDataTableFetch";
 import { useDeleteSwitch } from "../../api/Switches";
 import { toast } from "react-toastify";
+import { ModalCreateSwitch } from "./components/ModalCreateSwitch";
 
 interface NetworkSwitch extends DataTableItem {
     id: string;
@@ -26,6 +27,7 @@ interface NetworkSwitch extends DataTableItem {
 export default function Switches() {
     const { t } = useI18n();
     const deleteSwitchMutation = useDeleteSwitch();
+    const [isCreateModalVisible, setIsCreateModalVisible] = React.useState(false);
 
     const columns: GridColDef[] = React.useMemo(() => [
         {
@@ -157,9 +159,11 @@ export default function Switches() {
                 enableRowClick={true}
                 initialPageSize={10}
                 pageSizeOptions={[5, 10, 25, 50]}
+                onCreateClick={() => setIsCreateModalVisible(true)}
                 onDeleteSuccess={() => toast.success(t('switches.dataTable.deleteSuccess'))}
                 onDeleteError={() => toast.error(t('switches.dataTable.deleteError'))}
             />
+            <ModalCreateSwitch isVisible={isCreateModalVisible} setIsVisible={setIsCreateModalVisible} />
         </Box>
     );
 }

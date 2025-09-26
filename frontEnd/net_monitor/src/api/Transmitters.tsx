@@ -14,7 +14,7 @@ export type Transmitter = {
     accessUser: string;
     active: boolean;
     description: string;
-    integration: string;
+    integration: "huawei" | "datacom" | "zte";
     ipAddress: string;
     name: string;
     snmpCommunity: string;
@@ -23,7 +23,7 @@ export type Transmitter = {
     created_at: Date;
 }
 
-export type CreateTransmitterData = TransmitterFields & {
+export type CreateEditTransmitterData = TransmitterFields & {
     successEvent?: () => void;
 }
 
@@ -68,8 +68,8 @@ export function useCreateTransmitter() {
     const { token } = useAuth();
     const navigate = useNavigate();
 
-    return useMutation<Partial<Transmitter>, AxiosError<APIError>, CreateTransmitterData>({
-        mutationFn: async (data: CreateTransmitterData) => {
+    return useMutation<Partial<Transmitter>, AxiosError<APIError>, CreateEditTransmitterData>({
+        mutationFn: async (data: CreateEditTransmitterData) => {
             const response = await axios.post('http://localhost:9090/api/transmitters', data, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -78,7 +78,7 @@ export function useCreateTransmitter() {
             return response.data
         },
         onSuccess: (_data, variables) => {
-            toast.success(t(''));
+            toast.success(t('transmitters.createForm.successMessages.created'));
             if (variables.successEvent) {
                 variables.successEvent();
             }
@@ -86,10 +86,39 @@ export function useCreateTransmitter() {
         },
         onError: (error: AxiosError<APIError>) => {
             if (error.response?.data.error.code === "DUPLICATED_TRANSMITTER_NAME") {
-                toast.error(t(''));
+                toast.error(t('transmitters.createForm.errors.duplicatedTransmitterName'));
                 return;
             }
-            toast.error(t(''));
+            toast.error(t('transmitters.createForm.errors.error'));
+        }
+    });
+}
+
+export function useEditTransmitter() {
+    const { t } = useI18n();
+    const { token } = useAuth();
+    const navigate = useNavigate();
+
+    return useMutation<Partial<Transmitter>, AxiosError<APIError>, CreateEditTransmitterData>({
+        mutationFn: async (data: CreateEditTransmitterData) => {
+            const response = await axios.patch(`http://localhost:9090/api/transmitters/${data.id}`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data;
+        },
+        onSuccess: (_data, variables) => {
+            toast.success(t('transmitters.createForm.successMessages.saved'));
+            if (variables.successEvent) variables.successEvent;
+            navigate('/transmitters');
+        },
+        onError: (error: AxiosError<APIError>) => {
+            if (error.response?.data.error.code === "DUPLICATED_TRANSMITTER_NAME") {
+                toast.error(t('transmitters.createForm.errors.duplicatedTransmitterName'));
+                return;
+            }
+            toast.error(t('transmitters.createForm.errors.errorSaving'));
         }
     });
 }

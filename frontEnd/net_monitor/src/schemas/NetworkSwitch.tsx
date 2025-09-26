@@ -1,7 +1,7 @@
 import z from "zod";
 import { useI18n } from "../hooks/usei18n";
 
-export function useRouterSchema() {
+export function useNetworkSwitchSchema() {
     const { t } = useI18n();
 
     const ipRegex =
@@ -10,22 +10,20 @@ export function useRouterSchema() {
     return z.object({
         active: z.boolean(),
         integration: z.enum([
-            "mikrotik",
-            "huawei",
-            "cisco"
+            "ciscoCatalist",
+            "huawei"
         ]),
         name: z.string(),
         description: z.string(),
         accessUser: z.string(),
-        accessPassword: z.string().min(6, t('routers.schema.passwordLength')),
-        ipAddress: z.string().regex(ipRegex, t('routers.schema.invalidIpAddress')),
+        accessPassword: z.string().min(6, t('switches.schema.passwordLength')),
+        ipAddress: z.string().regex(ipRegex, t('switches.schema.invalidIpAddress')),
         snmpCommunity: z.string(),
         snmpPort: z.string()
     });
 }
 
-export type RouterFields = {
-    id?: string;
+export type NetworkSwitchFields = {
     accessPassword: string;
     accessUser: string;
     active: boolean;

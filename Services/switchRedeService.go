@@ -4,12 +4,14 @@ import (
 	models "net_monitor/Models"
 	repository "net_monitor/Repository"
 	utils "net_monitor/Utils"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type SwitchRedeService interface {
 	GetAll() ([]models.SwitchRede, error)
+	Create(switchRede *models.SwitchRede) (error, *utils.APIError)
 	GetById(id string) (*models.SwitchRede, error)
-	Create(switchRede *models.SwitchRede) error
 	Update(id string, switchRede *models.SwitchRede) error
 	Delete(id string) error
 }
@@ -30,13 +32,25 @@ func (s *switchRedeImpl) GetById(id string) (*models.SwitchRede, error) {
 	return s.repo.GetById(id)
 }
 
-func (s *switchRedeImpl) Create(switchRede *models.SwitchRede) error {
+func (s *switchRedeImpl) Create(switchRede *models.SwitchRede) (error, *utils.APIError) {
+	networkSwitch, errSearch := s.repo.GetByFilter(bson.M{"name": switchRede.Name})
+	if errSearch != nil {
+		return errSearch, nil
+	}
+
+	if networkSwitch != nil {
+		return nil, &utils.APIError{
+			Code:    "DUPLICATED_SWITCH_NAME",
+			Message: "A switch with that name already exists",
+		}
+	}
+
 	hashedPassword, err := utils.HashPassword(switchRede.AccessPassword)
 	if err != nil {
-		return err
+		return err, nil
 	}
 	switchRede.AccessPassword = hashedPassword
-	return s.repo.Create(switchRede)
+	return s.repo.Create(switchRede), nil
 }
 
 func (s *switchRedeImpl) Update(id string, switchRede *models.SwitchRede) error {

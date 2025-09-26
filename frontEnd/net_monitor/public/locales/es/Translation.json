@@ -68,11 +68,14 @@
                 "snmpPort": "Puerto Snmp"
             },
             "create": "Registro",
+            "save": "Guardar",
             "successMessages": {
-                "created": "¡El enrutador se registró correctamente!"
+                "created": "¡El enrutador se registró correctamente!",
+                "saved": "¡El enrutador se guardo correctamente!"
             },
             "errors": {
                 "error": "Error al registrar el enrutador",
+                "errorSaving": "Error al guardar el enrutador",
                 "duplicatedRouterName": "Ya existe un enrutador con el nombre especificado"
             }
         },
@@ -97,6 +100,34 @@
             },
             "deleteSuccess": "Transmisor eliminado exitosamente",
             "deleteError": "Error al eliminar el transmisor"
+        },
+        "createForm": {
+            "fields": {
+                "name": "Nombre",
+                "integration": "Integración",
+                "active": "Activo",
+                "description": "Descripción",
+                "ipAddress": "Dirección IP",
+                "accessUser": "Usuario de acceso",
+                "accessPassword": "Contraseña de acceso",
+                "snmpCommunity": "Comunidad Snmp",
+                "snmpPort": "Puerto Snmp"
+            },
+            "create": "Registro",
+            "save": "Guardar",
+            "successMessages": {
+                "created": "¡El transmisor se registró correctamente!",
+                "saved":"¡El transmisor se guardo correctamente!"
+            },
+            "errors": {
+                "error": "Error al registrar el transmisor",
+                "errorSaving": "Error al guardar el transmisor",
+                "duplicatedTransmitterName": "Ya existe un transmisor con el nombre especificado"
+            }
+        },
+        "schema": {
+            "passwordLength": "La contraseña debe contener al menos 6 caracteres",
+            "invalidIpAddress": "Dirección IP no válida"
         }
     },
     "switches": {
@@ -115,6 +146,31 @@
             },
             "deleteSuccess": "Switch eliminado con éxito",
             "deleteError": "Error al eliminar el switch"
+        },
+        "createForm": {
+            "fields": {
+                "name": "Nombre",
+                "integration": "Integración",
+                "active": "Activo",
+                "description": "Descripción",
+                "ipAddress": "Dirección IP",
+                "accessUser": "Usuario de acceso",
+                "accessPassword": "Contraseña de acceso",
+                "snmpCommunity": "Comunidad Snmp",
+                "snmpPort": "Puerto Snmp"
+            },
+            "create": "Registro",
+            "successMessages": {
+                "created": "¡El switch se registró correctamente!"
+            },
+            "errors": {
+                "error": "Error al registrar el switch",
+                "duplicatedTransmitterName": "Ya existe un switch con el nombre especificado"
+            }
+        },
+        "schema": {
+            "passwordLength": "La contraseña debe contener al menos 6 caracteres",
+            "invalidIpAddress": "Dirección IP no válida"
         }
     }
 }

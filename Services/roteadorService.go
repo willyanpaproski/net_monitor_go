@@ -12,7 +12,7 @@ type RoteadorService interface {
 	GetAll() ([]models.Roteador, error)
 	Create(roteador *models.Roteador) (error, *utils.APIError)
 	GetById(id string) (*models.Roteador, error)
-	Update(id string, roteador *models.Roteador) error
+	Update(id string, roteador *models.Roteador) (error, *utils.APIError)
 	Delete(id string) error
 }
 
@@ -55,6 +55,24 @@ func (s *roteadorServiceImpl) Delete(id string) error {
 	return s.repo.Delete(id)
 }
 
-func (s *roteadorServiceImpl) Update(id string, roteador *models.Roteador) error {
-	return s.repo.Update(id, roteador)
+func (s *roteadorServiceImpl) Update(id string, roteador *models.Roteador) (error, *utils.APIError) {
+	router, errSearch := s.repo.GetByFilter(bson.M{"name": roteador.Name})
+	if errSearch != nil {
+		return errSearch, nil
+	}
+	if router != nil {
+		return nil, &utils.APIError{
+			Code:    "DUPLICATED_ROUTER_NAME",
+			Message: "A router with that name already exists",
+		}
+	}
+
+	hashedPassword, err := utils.HashPassword(roteador.AccessPassword)
+	if err != nil {
+		return err, nil
+	}
+
+	roteador.AccessPassword = hashedPassword
+
+	return s.repo.Update(id, roteador), nil
 }

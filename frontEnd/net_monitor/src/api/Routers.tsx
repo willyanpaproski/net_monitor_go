@@ -14,7 +14,7 @@ export type Router = {
     accessUser: string;
     active: boolean;
     description: string;
-    integration: string;
+    integration: "mikrotik" | "huawei" | "cisco";
     ipAddress: string;
     name: string;
     snmpCommunity: string;
@@ -23,7 +23,7 @@ export type Router = {
     created_at: Date;
 }
 
-export type CreateRouterData = RouterFields & {
+export type CreateEditRouterData = RouterFields & {
     successEvent?: () => void;
 }
 
@@ -68,8 +68,8 @@ export function useCreateRouter() {
     const { token } = useAuth();
     const navigate = useNavigate();
 
-    return useMutation<Partial<Router>, AxiosError<APIError>, CreateRouterData>({
-        mutationFn: async (data: CreateRouterData) => {
+    return useMutation<Partial<Router>, AxiosError<APIError>, CreateEditRouterData>({
+        mutationFn: async (data: CreateEditRouterData) => {
             const response = await axios.post('http://localhost:9090/api/routers', data, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -79,9 +79,7 @@ export function useCreateRouter() {
         },
         onSuccess: (_data, variables) => {
             toast.success(t('routers.createForm.successMessages.created'));
-            if (variables.successEvent) {
-                variables.successEvent();
-            }
+            if (variables.successEvent) variables.successEvent();
             navigate('/routers');
         },
         onError: (error: AxiosError<APIError>) => {
@@ -90,6 +88,37 @@ export function useCreateRouter() {
                 return;
             }
             toast.error(t('routers.createForm.errors.error'));
+        }
+    });
+}
+
+export function useEditRouter() {
+    const { t } = useI18n();
+    const { token } = useAuth();
+    const navigate = useNavigate();
+
+    return useMutation<Partial<Router>, AxiosError<APIError>, CreateEditRouterData>({
+        mutationFn: async (data: CreateEditRouterData) => {
+            const response = await axios.patch(`http://localhost:9090/api/routers/${data.id}`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data;
+        },
+        onSuccess: (_data, variables) => {
+            toast.success(t('routers.createForm.successMessages.saved'));
+            if (variables.successEvent) {
+                variables.successEvent();
+            }
+            navigate('/routers');
+        },
+        onError: (error: AxiosError<APIError>) => {
+            if (error.response?.data.error.code === "DUPLICATED_ROUTER_NAME") {
+                toast.error(t('routers.createForm.errors.duplicatedRouterName'));
+                return
+            }
+            toast.error(t('routers.createForm.errors.errorSaving'));
         }
     });
 }

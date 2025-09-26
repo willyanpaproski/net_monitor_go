@@ -17,14 +17,15 @@ export function useTransmitterSchema() {
         name: z.string(),
         description: z.string(),
         accessUser: z.string(),
-        accessPassword: z.string(),
-        ipAddress: z.string().regex(ipRegex, t('')),
+        accessPassword: z.string().min(6, t('transmitters.schema.passwordLength')),
+        ipAddress: z.string().regex(ipRegex, t('transmitters.schema.invalidIpAddress')),
         snmpCommunity: z.string(),
         snmpPort: z.string()
     });
 }
 
 export type TransmitterFields = {
+    id?: string;
     accessPassword: string;
     accessUser: string;
     active: boolean;

@@ -34,23 +34,23 @@ export interface DataTableResponse<T> {
 export interface DataTableProps<T extends DataTableItem> {
   title: string;
   columns: GridColDef[];
-  
+ 
   fetchData: (params: {
     paginationModel: GridPaginationModel;
     sortModel: GridSortModel;
     filterModel: GridFilterModel;
   }) => Promise<DataTableResponse<T>>;
   deleteItem?: (id: string) => Promise<void>;
-  
+ 
   basePath: string;
-  
+ 
   enableCreate?: boolean;
   enableEdit?: boolean;
   enableDelete?: boolean;
   enableRowClick?: boolean;
   initialPageSize?: number;
   pageSizeOptions?: number[];
-  
+ 
   onCreateClick?: () => void;
   onEditClick?: (item: T) => void;
   onDeleteClick?: (item: T) => void;
@@ -89,11 +89,13 @@ export default function GenericDataTable<T extends DataTableItem>({
       ? Number(searchParams.get('pageSize'))
       : initialPageSize,
   });
+
   const [filterModel, setFilterModel] = React.useState<GridFilterModel>(
     searchParams.get('filter')
       ? JSON.parse(searchParams.get('filter') ?? '')
       : { items: [] },
   );
+
   const [sortModel, setSortModel] = React.useState<GridSortModel>(
     searchParams.get('sort') ? JSON.parse(searchParams.get('sort') ?? '') : [],
   );
@@ -112,12 +114,9 @@ export default function GenericDataTable<T extends DataTableItem>({
   const handlePaginationModelChange = React.useCallback(
     (model: GridPaginationModel) => {
       setPaginationModel(model);
-
       searchParams.set('page', String(model.page));
       searchParams.set('pageSize', String(model.pageSize));
-
       const newSearchParamsString = searchParams.toString();
-
       navigate(
         `${pathname}${newSearchParamsString ? '?' : ''}${newSearchParamsString}`,
       );
@@ -128,7 +127,6 @@ export default function GenericDataTable<T extends DataTableItem>({
   const handleFilterModelChange = React.useCallback(
     (model: GridFilterModel) => {
       setFilterModel(model);
-
       if (
         model.items.length > 0 ||
         (model.quickFilterValues && model.quickFilterValues.length > 0)
@@ -137,9 +135,7 @@ export default function GenericDataTable<T extends DataTableItem>({
       } else {
         searchParams.delete('filter');
       }
-
       const newSearchParamsString = searchParams.toString();
-
       navigate(
         `${pathname}${newSearchParamsString ? '?' : ''}${newSearchParamsString}`,
       );
@@ -150,15 +146,12 @@ export default function GenericDataTable<T extends DataTableItem>({
   const handleSortModelChange = React.useCallback(
     (model: GridSortModel) => {
       setSortModel(model);
-
       if (model.length > 0) {
         searchParams.set('sort', JSON.stringify(model));
       } else {
         searchParams.delete('sort');
       }
-
       const newSearchParamsString = searchParams.toString();
-
       navigate(
         `${pathname}${newSearchParamsString ? '?' : ''}${newSearchParamsString}`,
       );
@@ -169,14 +162,12 @@ export default function GenericDataTable<T extends DataTableItem>({
   const loadData = React.useCallback(async () => {
     setError(null);
     setIsLoading(true);
-
     try {
       const listData = await fetchData({
         paginationModel,
         sortModel,
         filterModel,
       });
-
       setRowsState({
         rows: listData.items,
         rowCount: listData.itemCount,
@@ -184,7 +175,6 @@ export default function GenericDataTable<T extends DataTableItem>({
     } catch (listDataError) {
       setError(listDataError as Error);
     }
-
     setIsLoading(false);
   }, [fetchData, paginationModel, sortModel, filterModel]);
 
@@ -199,12 +189,12 @@ export default function GenericDataTable<T extends DataTableItem>({
   }, [isLoading, loadData]);
 
   const handleRowClick = React.useCallback<GridEventListener<'rowClick'>>(
-    ({ row }: any) => {
+    (params) => {
       if (enableRowClick) {
         if (onRowClick) {
-          onRowClick(row);
+          onRowClick(params.row);
         } else {
-          navigate(`${basePath}/${row.id}`);
+          navigate(`${basePath}/${params.row.id}`);
         }
       }
     },
@@ -239,22 +229,22 @@ export default function GenericDataTable<T extends DataTableItem>({
 
       const itemName = (item as any).name || (item as any).title || `item ${item.id}`;
       const confirmed = window.confirm(`Deseja realmente excluir ${itemName}?`);
-
+      
       if (confirmed && deleteItem) {
         setIsLoading(true);
         try {
           await deleteItem(String(item.id));
-          
+         
           if (onDeleteSuccess) {
             onDeleteSuccess(item);
           } else {
             alert('Item excluído com sucesso!');
           }
-          
+         
           loadData();
         } catch (deleteError) {
           const error = deleteError as Error;
-          
+         
           if (onDeleteError) {
             onDeleteError(error, item);
           } else {
@@ -276,41 +266,44 @@ export default function GenericDataTable<T extends DataTableItem>({
 
   const columns = React.useMemo<GridColDef[]>(() => {
     const cols = [...baseColumns];
-    
+   
     if (enableEdit || enableDelete) {
-      const actions: any[] = [];
-      
-      if (enableEdit) {
-        actions.push((params: any) => (
-          <GridActionsCellItem
-            key="edit-item"
-            icon={<EditIcon />}
-            label="Edit"
-            onClick={handleRowEdit(params.row)}
-          />
-        ));
-      }
-      
-      if (enableDelete) {
-        actions.push((params: any) => (
-          <GridActionsCellItem
-            key="delete-item"
-            icon={<DeleteIcon />}
-            label="Delete"
-            onClick={handleRowDelete(params.row)}
-          />
-        ));
-      }
-
       cols.push({
         field: 'actions',
         type: 'actions',
-        flex: 1,
-        align: 'right',
-        getActions: ({ row }: any) => actions.map(actionFn => actionFn({ row })),
+        headerName: 'Ações',
+        width: 100,
+        cellClassName: 'actions',
+        getActions: (params) => {
+          const actions = [];
+          
+          if (enableEdit) {
+            actions.push(
+              <GridActionsCellItem
+                icon={<EditIcon />}
+                label="Editar"
+                onClick={handleRowEdit(params.row)}
+                color="inherit"
+              />
+            );
+          }
+          
+          if (enableDelete) {
+            actions.push(
+              <GridActionsCellItem
+                icon={<DeleteIcon />}
+                label="Excluir"
+                onClick={handleRowDelete(params.row)}
+                color="inherit"
+              />
+            );
+          }
+          
+          return actions;
+        },
       });
     }
-
+    
     return cols;
   }, [baseColumns, enableEdit, enableDelete, handleRowEdit, handleRowDelete]);
 
@@ -362,7 +355,6 @@ export default function GenericDataTable<T extends DataTableItem>({
             onRowClick={handleRowClick}
             loading={isLoading}
             initialState={initialState}
-            showToolbar
             pageSizeOptions={pageSizeOptions}
             localeText={{
               columnMenuUnsort: t("dataTable.unsort"),
@@ -385,6 +377,12 @@ export default function GenericDataTable<T extends DataTableItem>({
               [`& .${gridClasses.row}:hover`]: {
                 cursor: enableRowClick ? 'pointer' : 'default',
               },
+              '& .actions': {
+                color: 'text.secondary',
+              },
+              '& .actions:hover': {
+                color: 'text.primary',
+              },
             }}
             slotProps={{
               loadingOverlay: {
@@ -394,9 +392,6 @@ export default function GenericDataTable<T extends DataTableItem>({
               baseIconButton: {
                 size: 'small',
               },
-              toolbar: {
-                printOptions: { disableToolbarButton: true }
-              }
             }}
           />
         )}

@@ -12,7 +12,7 @@ type TransmissorFibraService interface {
 	GetAll() ([]models.TransmissorFibra, error)
 	Create(transmissorFibra *models.TransmissorFibra) (error, *utils.APIError)
 	GetById(id string) (*models.TransmissorFibra, error)
-	Update(id string, transmissorFibra *models.TransmissorFibra) error
+	Update(id string, transmissorFibra *models.TransmissorFibra) (error, *utils.APIError)
 	Delete(id string) error
 }
 
@@ -29,7 +29,7 @@ func (s *transmissorFibraImpl) GetAll() ([]models.TransmissorFibra, error) {
 }
 
 func (s *transmissorFibraImpl) Create(transmissorFibra *models.TransmissorFibra) (error, *utils.APIError) {
-	transmitter, errSearch := s.repo.GetByFilter(bson.M{"Name": transmissorFibra.Name})
+	transmitter, errSearch := s.repo.GetByFilter(bson.M{"name": transmissorFibra.Name})
 	if errSearch != nil {
 		return errSearch, nil
 	}
@@ -51,13 +51,24 @@ func (s *transmissorFibraImpl) GetById(id string) (*models.TransmissorFibra, err
 	return s.repo.GetById(id)
 }
 
-func (s *transmissorFibraImpl) Update(id string, transmissorFibra *models.TransmissorFibra) error {
+func (s *transmissorFibraImpl) Update(id string, transmissorFibra *models.TransmissorFibra) (error, *utils.APIError) {
+	transmitter, errSearch := s.repo.GetByFilter(bson.M{"name": transmissorFibra.Name})
+	if errSearch != nil {
+		return errSearch, nil
+	}
+	if transmitter != nil {
+		return nil, &utils.APIError{
+			Code:    "DUPLICATED_TRANSMITTER_NAME",
+			Message: "A transmitter with that name already exists",
+		}
+	}
+
 	hashedPassword, err := utils.HashPassword(transmissorFibra.AccessPassword)
 	if err != nil {
-		return err
+		return err, nil
 	}
 	transmissorFibra.AccessPassword = hashedPassword
-	return s.repo.Update(id, transmissorFibra)
+	return s.repo.Update(id, transmissorFibra), nil
 }
 
 func (s *transmissorFibraImpl) Delete(id string) error {

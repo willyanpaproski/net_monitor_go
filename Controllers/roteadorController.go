@@ -73,9 +73,13 @@ func (c *RoteadorController) UpdateRoteador(goGin *gin.Context) {
 		goGin.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
-	errUpdate := c.Service.Update(id, &req)
+	errUpdate, apiErr := c.Service.Update(id, &req)
 	if errUpdate != nil {
 		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errUpdate.Error()})
+		return
+	}
+	if apiErr != nil {
+		goGin.JSON(http.StatusBadRequest, gin.H{"error": apiErr})
 		return
 	}
 	goGin.JSON(http.StatusOK, req)
