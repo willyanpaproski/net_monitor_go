@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useCreateNetworkSwitch } from "../../../api/Switches";
+import { useCreateNetworkSwitch as useCreateNetworkSwitch, useEditNetworkSwitch, type NetworkSwitch } from "../../../api/Switches";
 import { useForm } from "../../../hooks/useForm";
 import { useI18n } from "../../../hooks/usei18n";
 import { useNetworkSwitchSchema } from "../../../schemas/NetworkSwitch";
@@ -10,17 +10,19 @@ import Close from "@mui/icons-material/Close";
 import { Button, FormLabel, Grid, MenuItem, OutlinedInput, Select, Switch, TextField } from "@mui/material";
 import { FormGrid } from "../../../components/FormGrid";
 
-type ModalCreateSwitchProps = {
+type ModalCreateEditSwitchProps = {
     isVisible: boolean;
     setIsVisible: (value: boolean) => void;
+    networkSwitch?: NetworkSwitch;
 }
 
-export function ModalCreateSwitch({ isVisible, setIsVisible }: ModalCreateSwitchProps) {
+export function ModalCreateEditSwitch({ isVisible, setIsVisible, networkSwitch }: ModalCreateEditSwitchProps) {
     const { t } = useI18n();
     const createSwitchMutation = useCreateNetworkSwitch();
+    const editSwitchMutation = useEditNetworkSwitch();
     const switchSchema = useNetworkSwitchSchema();
 
-    const { formData, handleChange, handleSelectChange, handleSwitchChange, isValid, errors, setDefault } = useForm({
+    const defaultFormData = {
         active: true,
         integration: "huawei",
         name: "",
@@ -30,7 +32,34 @@ export function ModalCreateSwitch({ isVisible, setIsVisible }: ModalCreateSwitch
         snmpCommunity: "",
         snmpPort: "",
         description: ""
-    }, ["name", "integration", "ipAddress", "snmpCommunity", "snmpPort"], switchSchema);
+    }
+
+    const { formData, setFormData, handleChange, handleSelectChange, handleSwitchChange, isValid, errors, setDefault } = useForm(defaultFormData, ["name", "integration", "ipAddress", "snmpCommunity", "snmpPort"], switchSchema);
+
+    const updateData = {
+        ...formData,
+        id: networkSwitch?.id,
+        created_at: networkSwitch?.created_at,
+        updated_at: networkSwitch?.updated_at
+    }
+
+    useEffect(() => {
+        if (networkSwitch) {
+            setFormData({
+                active: networkSwitch.active,
+                integration: networkSwitch.integration,
+                name: networkSwitch.name,
+                ipAddress: networkSwitch.ipAddress,
+                accessUser: networkSwitch.accessUser,
+                accessPassword: networkSwitch.accessPassword,
+                snmpCommunity: networkSwitch.snmpCommunity,
+                snmpPort: networkSwitch.snmpPort,
+                description: networkSwitch.description
+            });
+        } else {
+            setFormData(defaultFormData);
+        }
+    }, [networkSwitch, setFormData]);
 
     useEffect(() => {
         if (createSwitchMutation.isSuccess) {
@@ -38,7 +67,12 @@ export function ModalCreateSwitch({ isVisible, setIsVisible }: ModalCreateSwitch
             createSwitchMutation.reset();
             setIsVisible(false);
         }
-    }, [createSwitchMutation.isSuccess]);
+        if (editSwitchMutation.isSuccess) {
+            setDefault();
+            editSwitchMutation.reset();
+            setIsVisible(false);
+        }
+    }, [createSwitchMutation.isSuccess, editSwitchMutation.isSuccess]);
 
     if (!isVisible) return null;
     
@@ -175,9 +209,9 @@ export function ModalCreateSwitch({ isVisible, setIsVisible }: ModalCreateSwitch
                             }
                         }}
                         variant="contained"
-                        onClick={() => createSwitchMutation.mutate(formData)}
+                        onClick={() => networkSwitch ? editSwitchMutation.mutate(updateData) : createSwitchMutation.mutate(formData)}
                     >
-                        {t('routers.createForm.create')}
+                        {networkSwitch ? t('routers.createForm.save') : t('routers.createForm.create')}
                     </Button>
                 </Grid>
             </ModalContainer>

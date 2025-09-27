@@ -3,7 +3,6 @@ import type { AxiosError } from "axios";
 import type { APIError } from "../App";
 import axios from "axios";
 import { useAuth } from "../hooks/useAuth";
-import type { RouterFields } from "../schemas/Router";
 import { toast } from "react-toastify";
 import { useI18n } from "../hooks/usei18n";
 import { useNavigate } from "react-router-dom";
@@ -23,7 +22,11 @@ export type Router = {
     created_at: Date;
 }
 
-export type CreateEditRouterData = RouterFields & {
+type CreateRouterData = Omit<Router, 'id' | 'created_at' | 'updated_at'> & {
+    successEvent?: () => void;
+}
+
+type EditRouterData = Router & {
     successEvent?: () => void;
 }
 
@@ -67,9 +70,10 @@ export function useCreateRouter() {
     const { t } = useI18n();
     const { token } = useAuth();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    return useMutation<Partial<Router>, AxiosError<APIError>, CreateEditRouterData>({
-        mutationFn: async (data: CreateEditRouterData) => {
+    return useMutation<CreateRouterData, AxiosError<APIError>, CreateRouterData>({
+        mutationFn: async (data: CreateRouterData) => {
             const response = await axios.post('http://localhost:9090/api/routers', data, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -78,6 +82,7 @@ export function useCreateRouter() {
             return response.data
         },
         onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["routers"] });
             toast.success(t('routers.createForm.successMessages.created'));
             if (variables.successEvent) variables.successEvent();
             navigate('/routers');
@@ -96,9 +101,10 @@ export function useEditRouter() {
     const { t } = useI18n();
     const { token } = useAuth();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    return useMutation<Partial<Router>, AxiosError<APIError>, CreateEditRouterData>({
-        mutationFn: async (data: CreateEditRouterData) => {
+    return useMutation<Partial<Router>, AxiosError<APIError>, EditRouterData>({
+        mutationFn: async (data: EditRouterData) => {
             const response = await axios.patch(`http://localhost:9090/api/routers/${data.id}`, data, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -107,6 +113,7 @@ export function useEditRouter() {
             return response.data;
         },
         onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["routers"] });
             toast.success(t('routers.createForm.successMessages.saved'));
             if (variables.successEvent) {
                 variables.successEvent();

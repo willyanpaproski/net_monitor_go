@@ -160,11 +160,14 @@
                 "snmpPort": "Porta Snmp"
             },
             "create": "Cadastrar",
+            "save": "Salvar",
             "successMessages": {
-                "created": "Switch cadastrado com sucesso!"
+                "created": "Switch cadastrado com sucesso!",
+                "saved": "Switch salvo com sucesso!"
             },
             "errors": {
                 "error": "Erro ao cadastrar switch",
+                "errorSaving": "Erro ao salvar switch",
                 "duplicatedSwitchName": "Já existe um switch com o nome informado"
             }
         },

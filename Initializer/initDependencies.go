@@ -17,9 +17,6 @@ import (
 )
 
 func InitDependencies(router *gin.Engine) {
-	hub := websocket.NewHub()
-	go hub.Run()
-
 	requestLogCollection := db.GetCollection("requestLogs")
 	requestLogRepo := repository.NewMongoRepository[models.RequestLog](requestLogCollection)
 	requestLogService := services.NewRequestLogService(requestLogRepo)
@@ -53,12 +50,15 @@ func InitDependencies(router *gin.Engine) {
 	roteadorController := controllers.NewRoteadorController(roteadorService)
 	routes.SetupRoteadorRoutes(router, roteadorController, authService)
 
+	hub := websocket.NewHub(authService)
+	go hub.Run()
+
 	snmpService := services.NewSNMPService(hub, roteadorService)
 
 	mikrotikCollector := mikrotik.NewMikrotikCollector()
 	snmpService.RegisterCollector(mikrotikCollector)
 
-	routes.SetupWebSocketRoutes(router, hub, snmpService, authService)
+	routes.SetupWebSocketRoutes(router, hub, snmpService)
 
 	transmissorFibraCollection := db.GetCollection("transmissorFibra")
 	transmissorFibraRepo := repository.NewMongoRepository[models.TransmissorFibra](transmissorFibraCollection)

@@ -11,6 +11,7 @@ import Routers from "./screens/routers/Routers";
 import Layout from "./components/Layout";
 import Transmitters from "./screens/transmitters/Transmitters";
 import Switches from "./screens/switches/Switches";
+import RouterSnmpMonitor from "./screens/routerSnmpMonitor/RouterSnmpMonitor";
 
 export type APIError = {
   error : {
@@ -53,6 +54,15 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <Switches />
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/router/:routerId"
+                  element={
+                    <ProtectedRoute>
+                      <RouterSnmpMonitor />
                     </ProtectedRoute>
                   }
                 />

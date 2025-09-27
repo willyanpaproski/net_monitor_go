@@ -11,13 +11,18 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type AuthService interface {
+	ValidateToken(token string) (*models.User, error)
+}
+
 type Hub struct {
-	clients    map[*Client]bool
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan []byte
-	collectors map[string]SNMPCollector
-	mu         sync.RWMutex
+	clients     map[*Client]bool
+	register    chan *Client
+	unregister  chan *Client
+	broadcast   chan []byte
+	collectors  map[string]SNMPCollector
+	mu          sync.RWMutex
+	authService AuthService
 }
 
 type Client struct {
@@ -48,13 +53,14 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func NewHub() *Hub {
+func NewHub(authService AuthService) *Hub {
 	return &Hub{
-		clients:    make(map[*Client]bool),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		broadcast:  make(chan []byte),
-		collectors: make(map[string]SNMPCollector),
+		clients:     make(map[*Client]bool),
+		register:    make(chan *Client),
+		unregister:  make(chan *Client),
+		broadcast:   make(chan []byte),
+		collectors:  make(map[string]SNMPCollector),
+		authService: authService,
 	}
 }
 
@@ -98,6 +104,13 @@ func (h *Hub) Broadcast(message []byte) {
 func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 	routerID := r.URL.Query().Get("router_id")
 	vendor := r.URL.Query().Get("vendor")
+	authToken := r.URL.Query().Get("token")
+
+	_, errToken := h.authService.ValidateToken(authToken)
+	if errToken != nil {
+		http.Error(w, "token de autorização requirido", http.StatusUnauthorized)
+		return
+	}
 
 	if routerID == "" || vendor == "" {
 		http.Error(w, "router_id e vendor são obrigatórios", http.StatusBadRequest)

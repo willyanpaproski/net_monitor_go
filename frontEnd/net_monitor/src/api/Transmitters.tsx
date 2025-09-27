@@ -5,7 +5,6 @@ import { useAuth } from "../hooks/useAuth";
 import axios from "axios";
 import { useI18n } from "../hooks/usei18n";
 import { useNavigate } from "react-router-dom";
-import type { TransmitterFields } from "../schemas/Transmitter";
 import { toast } from "react-toastify";
 
 export type Transmitter = {
@@ -23,7 +22,11 @@ export type Transmitter = {
     created_at: Date;
 }
 
-export type CreateEditTransmitterData = TransmitterFields & {
+export type CreateTransmitterData = Omit<Transmitter, 'id' | 'created_at' | 'updated_at'> & {
+    successEvent?: () => void;
+}
+
+export type EditTransmitterData = Transmitter & {
     successEvent?: () => void;
 }
 
@@ -67,9 +70,10 @@ export function useCreateTransmitter() {
     const { t } = useI18n();
     const { token } = useAuth();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    return useMutation<Partial<Transmitter>, AxiosError<APIError>, CreateEditTransmitterData>({
-        mutationFn: async (data: CreateEditTransmitterData) => {
+    return useMutation<Partial<Transmitter>, AxiosError<APIError>, CreateTransmitterData>({
+        mutationFn: async (data: CreateTransmitterData) => {
             const response = await axios.post('http://localhost:9090/api/transmitters', data, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -78,6 +82,7 @@ export function useCreateTransmitter() {
             return response.data
         },
         onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["transmitters"] });
             toast.success(t('transmitters.createForm.successMessages.created'));
             if (variables.successEvent) {
                 variables.successEvent();
@@ -98,9 +103,10 @@ export function useEditTransmitter() {
     const { t } = useI18n();
     const { token } = useAuth();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
 
-    return useMutation<Partial<Transmitter>, AxiosError<APIError>, CreateEditTransmitterData>({
-        mutationFn: async (data: CreateEditTransmitterData) => {
+    return useMutation<Partial<Transmitter>, AxiosError<APIError>, EditTransmitterData>({
+        mutationFn: async (data: EditTransmitterData) => {
             const response = await axios.patch(`http://localhost:9090/api/transmitters/${data.id}`, data, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -109,6 +115,7 @@ export function useEditTransmitter() {
             return response.data;
         },
         onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["transmitters"] });
             toast.success(t('transmitters.createForm.successMessages.saved'));
             if (variables.successEvent) variables.successEvent;
             navigate('/transmitters');

@@ -12,7 +12,7 @@ type SwitchRedeService interface {
 	GetAll() ([]models.SwitchRede, error)
 	Create(switchRede *models.SwitchRede) (error, *utils.APIError)
 	GetById(id string) (*models.SwitchRede, error)
-	Update(id string, switchRede *models.SwitchRede) error
+	Update(id string, switchRede *models.SwitchRede) (error, *utils.APIError)
 	Delete(id string) error
 }
 
@@ -53,13 +53,24 @@ func (s *switchRedeImpl) Create(switchRede *models.SwitchRede) (error, *utils.AP
 	return s.repo.Create(switchRede), nil
 }
 
-func (s *switchRedeImpl) Update(id string, switchRede *models.SwitchRede) error {
+func (s *switchRedeImpl) Update(id string, switchRede *models.SwitchRede) (error, *utils.APIError) {
+	networkSwitch, errSearch := s.repo.GetByFilter(bson.M{"name": switchRede.Name})
+	if errSearch != nil {
+		return errSearch, nil
+	}
+	if networkSwitch != nil {
+		return nil, &utils.APIError{
+			Code:    "DUPLICATED_SWITCH_NAME",
+			Message: "A switch with that name already exists",
+		}
+	}
+
 	hashedPassword, err := utils.HashPassword(switchRede.AccessPassword)
 	if err != nil {
-		return err
+		return err, nil
 	}
 	switchRede.AccessPassword = hashedPassword
-	return s.repo.Update(id, switchRede)
+	return s.repo.Update(id, switchRede), nil
 }
 
 func (s *switchRedeImpl) Delete(id string) error {

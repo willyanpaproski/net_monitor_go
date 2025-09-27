@@ -160,11 +160,14 @@
                 "snmpPort": "Puerto Snmp"
             },
             "create": "Registro",
+            "save": "Guardar",
             "successMessages": {
-                "created": "¡El switch se registró correctamente!"
+                "created": "¡El switch se registró correctamente!",
+                "saved":"¡El switch se guardo correctamente!"
             },
             "errors": {
                 "error": "Error al registrar el switch",
+                "errorSaving": "Error al guardar el switch",
                 "duplicatedTransmitterName": "Ya existe un switch con el nombre especificado"
             }
         },

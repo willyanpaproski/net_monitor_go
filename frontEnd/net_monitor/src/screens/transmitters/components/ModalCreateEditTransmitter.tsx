@@ -16,23 +16,23 @@ type ModalCreateEditTransmitterProps = {
     transmitter?: Transmitter;
 }
 
-const defaultFormData = {
-    active: true,
-    integration: "huawei",
-    name: "",
-    ipAddress: "",
-    accessUser: "",
-    accessPassword: "",
-    snmpCommunity: "",
-    snmpPort: "",
-    description: ""
-}
-
 export function ModalCreateEditTransmitter({ isVisible, setIsVisible, transmitter }: ModalCreateEditTransmitterProps) {
     const { t } = useI18n();
     const createTransmitterMutation = useCreateTransmitter();
     const editTransmitterMutation = useEditTransmitter();
     const transmitterSchema = useTransmitterSchema();
+
+    const defaultFormData = {
+        active: true,
+        integration: "huawei" as const,
+        name: "",
+        ipAddress: "",
+        accessUser: "",
+        accessPassword: "",
+        snmpCommunity: "",
+        snmpPort: "",
+        description: ""
+    }
 
     const { formData, setFormData, handleChange, handleSelectChange, handleSwitchChange, isValid, errors, setDefault } = useForm(defaultFormData, ["name", "integration", "ipAddress", "snmpCommunity", "snmpPort"], transmitterSchema);
 
@@ -150,6 +150,7 @@ export function ModalCreateEditTransmitter({ isVisible, setIsVisible, transmitte
                         <OutlinedInput 
                             id="accessPassword"
                             name="accessPassword"
+                            type="password"
                             size="small"
                             value={formData.accessPassword}
                             onChange={handleChange}
@@ -202,7 +203,12 @@ export function ModalCreateEditTransmitter({ isVisible, setIsVisible, transmitte
                             }
                         }}
                         variant="contained"
-                        onClick={() => transmitter ? editTransmitterMutation.mutate({...formData, id: transmitter.id}) : createTransmitterMutation.mutate(formData)}
+                        onClick={() => transmitter ? editTransmitterMutation.mutate({
+                                ...formData, 
+                                id: transmitter.id,
+                                created_at: transmitter.created_at,
+                                updated_at: transmitter.updated_at
+                            }) : createTransmitterMutation.mutate(formData)}
                     >
                         {transmitter ? t('transmitters.createForm.save') : t('transmitters.createForm.create')}
                     </Button>

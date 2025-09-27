@@ -22,15 +22,3 @@ export function useNetworkSwitchSchema() {
         snmpPort: z.string()
     });
 }
-
-export type NetworkSwitchFields = {
-    accessPassword: string;
-    accessUser: string;
-    active: boolean;
-    description: string;
-    integration: string;
-    ipAddress: string;
-    name: string;
-    snmpCommunity: string;
-    snmpPort: string;
-}

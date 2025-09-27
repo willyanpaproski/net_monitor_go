@@ -160,11 +160,14 @@
                 "snmpPort": "Snmp port"
             },
             "create": "Register",
+            "save": "Save",
             "successMessages": {
-                "created": "Switch registered successfully!"
+                "created": "Switch registered successfully!",
+                "saved": "Switch saved successfully!"
             },
             "errors": {
                 "error": "Error registering switch",
+                "errorSaving": "Error saving switch",
                 "duplicatedTransmitterName": "A switch with the given name already exists"
             }
         },

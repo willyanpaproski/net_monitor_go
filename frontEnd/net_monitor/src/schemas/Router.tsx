@@ -23,16 +23,3 @@ export function useRouterSchema() {
         snmpPort: z.string()
     });
 }
-
-export type RouterFields = {
-    id?: string;
-    accessPassword: string;
-    accessUser: string;
-    active: boolean;
-    description: string;
-    integration: string;
-    ipAddress: string;
-    name: string;
-    snmpCommunity: string;
-    snmpPort: string;
-}

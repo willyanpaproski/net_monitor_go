@@ -16,23 +16,23 @@ type ModalCreateEditRouterProps = {
     router?: Router | undefined;
 }
 
-const defaultFormData = {
-    active: true,
-    integration: "mikrotik" as const,
-    name: "",
-    ipAddress: "",
-    accessUser: "",
-    accessPassword: "",
-    snmpCommunity: "",
-    snmpPort: "",
-    description: ""
-};
-
 export function ModalCreateEditRouter({ isVisible, setIsVisible, router }: ModalCreateEditRouterProps) {
     const { t } = useI18n();
     const createRouterMutation = useCreateRouter();
     const editRouterMutation = useEditRouter();
     const routerSchema = useRouterSchema();
+
+    const defaultFormData = {
+        active: true,
+        integration: "mikrotik" as const,
+        name: "",
+        ipAddress: "",
+        accessUser: "",
+        accessPassword: "",
+        snmpCommunity: "",
+        snmpPort: "",
+        description: ""
+    };
 
     const { formData, setFormData, handleChange, handleSelectChange, handleSwitchChange, isValid, errors, setDefault } = useForm(defaultFormData, ["name", "integration", "ipAddress", "snmpCommunity", "snmpPort"], routerSchema);
 
@@ -203,7 +203,12 @@ export function ModalCreateEditRouter({ isVisible, setIsVisible, router }: Modal
                             }
                         }}
                         variant="contained"
-                        onClick={() => router ? editRouterMutation.mutate({...formData, id: router.id}) : createRouterMutation.mutate(formData)}
+                        onClick={() => router ? editRouterMutation.mutate({
+                            ...formData,
+                            id: router.id,
+                            created_at: router.created_at,
+                            updated_at: router.updated_at
+                        }) : createRouterMutation.mutate(formData)}
                     >
                         {router ? t('routers.createForm.save') : t('routers.createForm.create')}
                     </Button>

@@ -1,33 +1,18 @@
 import type { GridColDef } from "@mui/x-data-grid";
-import type { DataTableItem } from "../../components/DataTable/DataTable";
 import { useI18n } from "../../hooks/usei18n";
 import * as React from 'react';
 import { Box, Chip } from "@mui/material";
 import GenericDataTable from "../../components/DataTable/DataTable";
 import { useDataTableFetch } from "../../api/GenericDataTableFetch";
-import { useDeleteSwitch } from "../../api/Switches";
+import { useDeleteSwitch, type NetworkSwitch } from "../../api/Switches";
 import { toast } from "react-toastify";
-import { ModalCreateSwitch } from "./components/ModalCreateSwitch";
-
-interface NetworkSwitch extends DataTableItem {
-    id: string;
-    active: boolean;
-    integration: string;
-    name: string;
-    description: string;
-    accessUser: string;
-    accessPassword: string;
-    ipAddress: string;
-    snmpCommunity: string;
-    snmpPort: string;
-    created_at: Date;
-    updated_at: Date;
-}
+import { ModalCreateEditSwitch } from "./components/ModalCreateSwitch";
 
 export default function Switches() {
     const { t } = useI18n();
     const deleteSwitchMutation = useDeleteSwitch();
     const [isCreateModalVisible, setIsCreateModalVisible] = React.useState(false);
+    const [rowData, setRowData] = React.useState<NetworkSwitch | undefined>(undefined);
 
     const columns: GridColDef[] = React.useMemo(() => [
         {
@@ -159,11 +144,18 @@ export default function Switches() {
                 enableRowClick={true}
                 initialPageSize={10}
                 pageSizeOptions={[5, 10, 25, 50]}
-                onCreateClick={() => setIsCreateModalVisible(true)}
+                onCreateClick={() => {
+                    setRowData(undefined);
+                    setIsCreateModalVisible(true);
+                }}
+                onEditClick={(item) => {
+                    setRowData(item);
+                    setIsCreateModalVisible(true);
+                }}
                 onDeleteSuccess={() => toast.success(t('switches.dataTable.deleteSuccess'))}
                 onDeleteError={() => toast.error(t('switches.dataTable.deleteError'))}
             />
-            <ModalCreateSwitch isVisible={isCreateModalVisible} setIsVisible={setIsCreateModalVisible} />
+            <ModalCreateEditSwitch networkSwitch={rowData} isVisible={isCreateModalVisible} setIsVisible={setIsCreateModalVisible} />
         </Box>
     );
 }
