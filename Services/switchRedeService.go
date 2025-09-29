@@ -6,6 +6,7 @@ import (
 	utils "net_monitor/Utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SwitchRedeService interface {
@@ -54,7 +55,17 @@ func (s *switchRedeImpl) Create(switchRede *models.SwitchRede) (error, *utils.AP
 }
 
 func (s *switchRedeImpl) Update(id string, switchRede *models.SwitchRede) (error, *utils.APIError) {
-	networkSwitch, errSearch := s.repo.GetByFilter(bson.M{"name": switchRede.Name})
+	switchObjectId, errObjectId := primitive.ObjectIDFromHex(id)
+	if errObjectId != nil {
+		return errObjectId, nil
+	}
+
+	networkSwitch, errSearch := s.repo.GetByFilter(bson.M{
+		"$and": []bson.M{
+			{"name": switchRede.Name},
+			{"_id": bson.M{"$ne": switchObjectId}},
+		},
+	})
 	if errSearch != nil {
 		return errSearch, nil
 	}

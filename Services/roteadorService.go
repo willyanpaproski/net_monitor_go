@@ -6,6 +6,7 @@ import (
 	utils "net_monitor/Utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type RoteadorService interface {
@@ -56,7 +57,17 @@ func (s *roteadorServiceImpl) Delete(id string) error {
 }
 
 func (s *roteadorServiceImpl) Update(id string, roteador *models.Roteador) (error, *utils.APIError) {
-	router, errSearch := s.repo.GetByFilter(bson.M{"name": roteador.Name})
+	routerObectId, errObjectId := primitive.ObjectIDFromHex(id)
+	if errObjectId != nil {
+		return errObjectId, nil
+	}
+
+	router, errSearch := s.repo.GetByFilter(bson.M{
+		"$and": []bson.M{
+			{"name": roteador.Name},
+			{"_id": bson.M{"$ne": routerObectId}},
+		},
+	})
 	if errSearch != nil {
 		return errSearch, nil
 	}

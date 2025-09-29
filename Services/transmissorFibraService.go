@@ -6,6 +6,7 @@ import (
 	utils "net_monitor/Utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type TransmissorFibraService interface {
@@ -52,7 +53,16 @@ func (s *transmissorFibraImpl) GetById(id string) (*models.TransmissorFibra, err
 }
 
 func (s *transmissorFibraImpl) Update(id string, transmissorFibra *models.TransmissorFibra) (error, *utils.APIError) {
-	transmitter, errSearch := s.repo.GetByFilter(bson.M{"name": transmissorFibra.Name})
+	transmitterObjectId, errObjectId := primitive.ObjectIDFromHex(id)
+	if errObjectId != nil {
+		return errObjectId, nil
+	}
+	transmitter, errSearch := s.repo.GetByFilter(bson.M{
+		"$and": []bson.M{
+			{"name": transmissorFibra.Name},
+			{"_id": bson.M{"$ne": transmitterObjectId}},
+		},
+	})
 	if errSearch != nil {
 		return errSearch, nil
 	}

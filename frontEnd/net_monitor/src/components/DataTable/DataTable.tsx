@@ -31,6 +31,14 @@ export interface DataTableResponse<T> {
   itemCount: number;
 }
 
+export interface CustomAction<T> {
+  icon: React.ReactElement;
+  label: string;
+  onClick: (item: T) => void;
+  color?: 'inherit' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning';
+  show?: (item: T) => boolean;
+}
+
 export interface DataTableProps<T extends DataTableItem> {
   title: string;
   columns: GridColDef[];
@@ -50,6 +58,7 @@ export interface DataTableProps<T extends DataTableItem> {
   enableRowClick?: boolean;
   initialPageSize?: number;
   pageSizeOptions?: number[];
+  customActions?: CustomAction<T>[];
  
   onCreateClick?: () => void;
   onEditClick?: (item: T) => void;
@@ -71,6 +80,7 @@ export default function GenericDataTable<T extends DataTableItem>({
   enableRowClick = true,
   initialPageSize = INITIAL_PAGE_SIZE,
   pageSizeOptions = [5, INITIAL_PAGE_SIZE, 25],
+  customActions = [],
   onCreateClick,
   onEditClick,
   onDeleteClick,
@@ -266,20 +276,44 @@ export default function GenericDataTable<T extends DataTableItem>({
 
   const columns = React.useMemo<GridColDef[]>(() => {
     const cols = [...baseColumns];
-   
-    if (enableEdit || enableDelete) {
+
+    if (enableEdit || enableDelete || customActions.length > 0) {
+      const totalActions = 
+        (enableEdit ? 1 : 0) + 
+        (enableDelete ? 1 : 0) + 
+        customActions.length;
+      
+      const actionColumnWidth = Math.max(100, totalActions * 50);
+
       cols.push({
         field: 'actions',
         type: 'actions',
         headerName: 'Ações',
-        width: 100,
+        width: actionColumnWidth,
         cellClassName: 'actions',
         getActions: (params) => {
           const actions = [];
           
+          customActions.forEach((customAction, index) => {
+            if (customAction.show && !customAction.show(params.row)) {
+              return;
+            }
+            
+            actions.push(
+              <GridActionsCellItem
+                key={`custom-${index}`}
+                icon={customAction.icon}
+                label={customAction.label}
+                onClick={() => customAction.onClick(params.row)}
+                color='inherit'
+              />
+            );
+          });
+          
           if (enableEdit) {
             actions.push(
               <GridActionsCellItem
+                key="edit"
                 icon={<EditIcon />}
                 label="Editar"
                 onClick={handleRowEdit(params.row)}
@@ -291,6 +325,7 @@ export default function GenericDataTable<T extends DataTableItem>({
           if (enableDelete) {
             actions.push(
               <GridActionsCellItem
+                key="delete"
                 icon={<DeleteIcon />}
                 label="Excluir"
                 onClick={handleRowDelete(params.row)}
@@ -305,8 +340,8 @@ export default function GenericDataTable<T extends DataTableItem>({
     }
     
     return cols;
-  }, [baseColumns, enableEdit, enableDelete, handleRowEdit, handleRowDelete]);
-
+  }, [baseColumns, enableEdit, enableDelete, customActions, handleRowEdit, handleRowDelete]);
+  
   return (
     <PageContainer
       title={title}

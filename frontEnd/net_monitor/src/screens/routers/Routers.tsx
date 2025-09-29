@@ -1,17 +1,20 @@
 import * as React from 'react';
 import type { GridColDef } from '@mui/x-data-grid';
 import { Box, Chip } from '@mui/material';
-import GenericDataTable from '../../components/DataTable/DataTable';
+import GenericDataTable, { type CustomAction } from '../../components/DataTable/DataTable';
 import { useDataTableFetch } from '../../api/GenericDataTableFetch';
 import { useI18n } from '../../hooks/usei18n';
 import { useDeleteRouter } from '../../api/Routers';
 import { toast } from 'react-toastify';
 import { ModalCreateEditRouter } from './components/ModalCreateEditRouter';
-import type { Router } from '../../api/Routers'
+import type { Router } from '../../api/Routers';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import { useNavigate } from 'react-router-dom';
 
 export default function Routers() {
   const { t } = useI18n();
   const deleteRouterMutation = useDeleteRouter();
+  const navigate = useNavigate();
   const [isCreateEditModalVisible, setIsCreateEditModalVisible] = React.useState(false);
   const [rowData, setRowData] = React.useState<Router | undefined>(undefined);
 
@@ -122,6 +125,15 @@ export default function Routers() {
     },
   ], []);
 
+  const customActions: CustomAction<Router>[] = React.useMemo(() => [
+    {
+      icon: <MonitorHeartIcon />,
+      label: 'Monitor',
+      onClick: (router) => {navigate(`/router/${router.id}`)},
+      show: (router) => router.active
+    }
+  ], []);
+
   const deleteRouter = React.useCallback(async (id: string) => {
     return deleteRouterMutation.mutateAsync(id);
   }, [deleteRouterMutation]);
@@ -149,6 +161,7 @@ export default function Routers() {
         enableRowClick={true}
         initialPageSize={10}
         pageSizeOptions={[5, 10, 25, 50]}
+        customActions={customActions}
         onCreateClick={() => {
           setRowData(undefined);
           setIsCreateEditModalVisible(true);
