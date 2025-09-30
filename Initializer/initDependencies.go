@@ -77,4 +77,5 @@ func InitDependencies(router *gin.Engine) {
 	logService := services.NewLogService(logRepo)
 	logController := controllers.NewLogController(logService)
 	routes.SetupLogRoutes(router, logController, authService)
+
 }

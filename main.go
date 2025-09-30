@@ -24,6 +24,8 @@ func main() {
 	router.Use(middlewares.CORSMiddleware())
 
 	initializer.InitDependencies(router)
+	schedulerManager := initializer.InitSchedules()
+	go schedulerManager.StartAll()
 
 	if err := router.Run(":" + os.Getenv("APP_PORT")); err != nil {
 		log.Fatalf("Erro ao iniciar servidor %v", err)

@@ -45,6 +45,8 @@ func (s *roteadorServiceImpl) Create(roteador *models.Roteador) (error, *utils.A
 		return err, nil
 	}
 	roteador.AccessPassword = hashedPassword
+	roteador.MemoryUsageToday = []models.MemoryRecord{}
+	roteador.MonthAvarageMemoryUsage = []models.MemoryRecord{}
 	return s.repo.Create(roteador), nil
 }
 

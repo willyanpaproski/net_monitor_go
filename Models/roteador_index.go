@@ -48,6 +48,14 @@ func RoteadorIndexes(collection *mongo.Collection) {
 			Options: options.Index().SetName("_snmpPort"),
 		},
 		{
+			Keys:    bson.D{{Key: "memoryUsageToday", Value: 1}},
+			Options: options.Index().SetName("_memoryUsageToday"),
+		},
+		{
+			Keys:    bson.D{{Key: "monthAvarageMemoryUsage", Value: 1}},
+			Options: options.Index().SetName("_monthAvarageMemoryUsage"),
+		},
+		{
 			Keys:    bson.D{{Key: "created_at", Value: 1}},
 			Options: options.Index().SetName("_created_at"),
 		},
