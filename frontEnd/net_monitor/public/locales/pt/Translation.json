@@ -82,6 +82,22 @@
         "schema": {
             "passwordLength": "A senha deve conter no mínimo 6 caracteres",
             "invalidIpAddress": "Endereço IP inválido"
+        },
+        "snmpMonitor": {
+            "dashboard": {
+                "memoryStatCard": {
+                    "averageMemoryUsage": "Uso médio de memória",
+                    "lastMonth": "Últimos 30 dias"
+                },
+                "cpuStatCard": {
+                    "averageCpuUsage": "Uso médio de CPU",
+                    "lastMonth": "Últimos 30 dias"
+                },
+                "diskStatCard": {
+                    "averageDiskUsage": "Uso médio de disco",
+                    "lastMonth": "Últimos 30 dias"
+                }
+            }
         }
     },
     "transmitters": {

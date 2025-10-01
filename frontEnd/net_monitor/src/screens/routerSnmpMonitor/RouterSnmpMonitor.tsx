@@ -2,8 +2,10 @@ import { useSnmpMonitor } from "../../hooks/useSnmpMonitor";
 import { useEffect } from "react";
 import StatCard from "../../components/StatCard";
 import { Stack } from "@mui/material";
+import { useI18n } from "../../hooks/usei18n";
 
 export default function RouterSnmpMonitor() {
+    const { t } = useI18n();
     const monitor = useSnmpMonitor({
         apiUrl: 'http://localhost:9090',
         serverUrl: 'ws://localhost:9090/ws/snmp',
@@ -22,23 +24,23 @@ export default function RouterSnmpMonitor() {
         <>
             <Stack direction={'row'} spacing={2} px={5}>
                 <StatCard
-                    title="Uso médio de memória"
+                    title={t('routers.snmpMonitor.dashboard.memoryStatCard.averageMemoryUsage')}
                     value="14kb"
-                    interval="Últimos 30 dias"
+                    interval={t('routers.snmpMonitor.dashboard.memoryStatCard.lastMonth')}
                     trend="up"
                     data={[98, 64, 23, 4]}
                 />
                 <StatCard 
-                    title="Uso médio de cpu"
+                    title={t('routers.snmpMonitor.dashboard.cpuStatCard.averageCpuUsage')}
                     value="6%"
-                    interval="Últimos 30 dias"
+                    interval={t('routers.snmpMonitor.dashboard.cpuStatCard.lastMonth')}
                     trend="up"
                     data={[3, 2, 1, 3]}
                 />
                 <StatCard 
-                    title="Uso médio de disco"
+                    title={t('routers.snmpMonitor.dashboard.diskStatCard.averageDiskUsage')}
                     value="20mb"
-                    interval="Últimos 30 dias"
+                    interval={t('routers.snmpMonitor.dashboard.diskStatCard.lastMonth')}
                     trend="up"
                     data={[20, 20, 20, 20]}
                 />

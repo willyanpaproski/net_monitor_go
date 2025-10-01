@@ -16,9 +16,15 @@ func InitSchedules() *services.SchedulerManager {
 	routerRepo := repository.NewMongoRepository[models.Roteador](routerCollection)
 
 	mikrotikCollector := mikrotik.NewMikrotikCollector()
+
 	mikrotikMemoryScheduler := mikrotikScheduler.NewMemoryScheduler(routerRepo, mikrotikCollector)
+	mikrotikAverageMemoryCalculatorScheduler := mikrotikScheduler.NewAverageMemoryCalculatorScheduler(routerRepo)
+
+	mikrotikCpuScheduler := mikrotikScheduler.NewCPUScheduler(routerRepo, mikrotikCollector)
 
 	schedulerManager.Register(mikrotikMemoryScheduler)
+	schedulerManager.Register(mikrotikAverageMemoryCalculatorScheduler)
+	schedulerManager.Register(mikrotikCpuScheduler)
 
 	return schedulerManager
 }

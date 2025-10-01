@@ -47,6 +47,8 @@ func (s *roteadorServiceImpl) Create(roteador *models.Roteador) (error, *utils.A
 	roteador.AccessPassword = hashedPassword
 	roteador.MemoryUsageToday = []models.MemoryRecord{}
 	roteador.MonthAvarageMemoryUsage = []models.MemoryRecord{}
+	roteador.CpuUsageToday = []models.CpuRecord{}
+	roteador.MonthAverageCpuUsage = []models.CpuRecord{}
 	return s.repo.Create(roteador), nil
 }
 
@@ -63,7 +65,6 @@ func (s *roteadorServiceImpl) Update(id string, roteador *models.Roteador) (erro
 	if errObjectId != nil {
 		return errObjectId, nil
 	}
-
 	router, errSearch := s.repo.GetByFilter(bson.M{
 		"$and": []bson.M{
 			{"name": roteador.Name},
@@ -79,13 +80,24 @@ func (s *roteadorServiceImpl) Update(id string, roteador *models.Roteador) (erro
 			Message: "A router with that name already exists",
 		}
 	}
-
+	existentRouter, errGet := s.repo.GetById(id)
+	if errGet != nil {
+		return errGet, nil
+	}
+	if existentRouter == nil {
+		return nil, &utils.APIError{
+			Code:    "ROUTER_NOT_FOUND",
+			Message: "Router not found",
+		}
+	}
 	hashedPassword, err := utils.HashPassword(roteador.AccessPassword)
 	if err != nil {
 		return err, nil
 	}
-
+	roteador.MemoryUsageToday = existentRouter.MemoryUsageToday
+	roteador.MonthAvarageMemoryUsage = existentRouter.MonthAvarageMemoryUsage
+	roteador.CpuUsageToday = existentRouter.CpuUsageToday
+	roteador.MonthAverageCpuUsage = existentRouter.MonthAverageCpuUsage
 	roteador.AccessPassword = hashedPassword
-
 	return s.repo.Update(id, roteador), nil
 }

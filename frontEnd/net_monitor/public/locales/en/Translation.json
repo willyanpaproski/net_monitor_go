@@ -82,6 +82,22 @@
         "schema": {
             "passwordLength": "Password must contain at least 6 characters",
             "invalidIpAddress": "Invalid IP address"
+        },
+        "snmpMonitor": {
+            "dashboard": {
+                "memoryStatCard": {
+                    "averageMemoryUsage": "Average memory usage",
+                    "lastMonth": "Last 30 days"
+                },
+                "cpuStatCard": {
+                    "averageCpuUsage": "Average CPU usage",
+                    "lastMonth": "Last 30 days"
+                },
+                "diskStatCard": {
+                    "averageDiskUsage": "Average disk usage",
+                    "lastMonth": "Últimos 30 dias"
+                }
+            }
         }
     },
     "transmitters": {

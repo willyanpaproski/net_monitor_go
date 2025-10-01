@@ -1,7 +1,6 @@
 package mikrotikScheduler
 
 import (
-	"log"
 	"time"
 
 	models "net_monitor/Models"
@@ -25,7 +24,6 @@ func NewMemoryScheduler(
 	roteadorRepo *repository.MongoRepository[models.Roteador],
 	collector *mikrotik.MikrotikCollector,
 ) *MemoryScheduler {
-	log.Println("[MemoryScheduler] Criando novo scheduler")
 	return &MemoryScheduler{
 		RoteadorRepo: roteadorRepo,
 		Collector:    collector,
