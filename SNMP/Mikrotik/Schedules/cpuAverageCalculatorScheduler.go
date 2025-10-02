@@ -11,40 +11,39 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var _ interfaces.Scheduler = (*MemoryScheduler)(nil)
+var _ interfaces.Scheduler = (*CPUScheduler)(nil)
 
-type AverageMemoryScheduler struct {
+type AverageCpuScheduler struct {
 	RouterRepo *repository.MongoRepository[models.Roteador]
 	StopCh     chan struct{}
 }
 
-func NewAverageMemoryCalculatorScheduler(
+func NewAverageCpuCalculatorScheduler(
 	routerRepo *repository.MongoRepository[models.Roteador],
-) *AverageMemoryScheduler {
-	return &AverageMemoryScheduler{
+) *AverageCpuScheduler {
+	return &AverageCpuScheduler{
 		RouterRepo: routerRepo,
 		StopCh:     make(chan struct{}),
 	}
 }
 
-func (s *AverageMemoryScheduler) Start() {
+func (s *AverageCpuScheduler) Start() {
 	for {
 		timer := Utils.GetNextMidnight()
 		select {
 		case <-timer.C:
-			s.calculateAllAverageMemoryUsage()
+			s.calculateAllAverageCpuUsage()
 		case <-s.StopCh:
-			timer.Stop()
 			return
 		}
 	}
 }
 
-func (s *AverageMemoryScheduler) Stop() {
+func (s *AverageCpuScheduler) Stop() {
 	close(s.StopCh)
 }
 
-func (s *AverageMemoryScheduler) calculateAllAverageMemoryUsage() {
+func (s *AverageCpuScheduler) calculateAllAverageCpuUsage() {
 	routers, err := s.RouterRepo.GetByFilter(bson.M{
 		"integration": models.RoteadorMikrotik,
 		"active":      true,
@@ -56,39 +55,39 @@ func (s *AverageMemoryScheduler) calculateAllAverageMemoryUsage() {
 		return
 	}
 	for _, router := range routers {
-		go s.calculateAverageMemoryUsage(router)
+		go s.calculateAverageCpuUsage(router)
 	}
 }
 
-func (s *AverageMemoryScheduler) calculateAverageMemoryUsage(router models.Roteador) {
-	if router.MemoryUsageToday == nil {
+func (s *AverageCpuScheduler) calculateAverageCpuUsage(router models.Roteador) {
+	if router.CpuUsageToday == nil {
 		errUpdate := s.RouterRepo.UpdateByFilter(
 			bson.M{"_id": router.ID},
-			bson.M{"$set": bson.M{"memoryUsageToday": []models.MemoryRecord{}}},
+			bson.M{"$set": bson.M{"memoryUsageToday": []models.CpuRecord{}}},
 		)
 		if errUpdate != nil {
 			return
 		}
 		return
 	}
-	if len(router.MemoryUsageToday) == 0 {
+	if len(router.CpuUsageToday) == 0 {
 		return
 	}
-	totalMemory := 0.0
-	for _, memoryRegister := range router.MemoryUsageToday {
-		totalMemory += memoryRegister.Value
+	totalCpuUsage := 0.0
+	for _, cpuRegister := range router.CpuUsageToday {
+		totalCpuUsage += cpuRegister.Value
 	}
 	now := primitive.NewDateTimeFromTime(time.Now())
-	newRecord := models.MemoryRecord{
+	newRecord := models.CpuRecord{
 		Timestamp: now,
-		Value:     totalMemory / float64(len(router.MemoryUsageToday)),
+		Value:     totalCpuUsage / float64(len(router.CpuUsageToday)),
 	}
 	update := bson.M{
 		"$push": bson.M{
-			"monthAvarageMemoryUsage": newRecord,
+			"monthAverageCpuUsage": newRecord,
 		},
 		"$set": bson.M{
-			"memoryUsageToday": []models.MemoryRecord{},
+			"cpuUsageToday": []models.CpuRecord{},
 		},
 	}
 	errRecord := s.RouterRepo.UpdateByFilter(

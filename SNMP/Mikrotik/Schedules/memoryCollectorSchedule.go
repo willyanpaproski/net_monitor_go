@@ -32,12 +32,16 @@ func NewMemoryScheduler(
 }
 
 func (s *MemoryScheduler) Start() {
-
-	s.collectAllMemoryUsage()
-
+	initialTimer := time.NewTimer(10 * time.Minute)
+	select {
+	case <-initialTimer.C:
+		s.collectAllMemoryUsage()
+	case <-s.StopCh:
+		initialTimer.Stop()
+		return
+	}
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
-
 	for {
 		select {
 		case <-ticker.C:
@@ -53,43 +57,35 @@ func (s *MemoryScheduler) Stop() {
 }
 
 func (s *MemoryScheduler) collectAllMemoryUsage() {
-
 	routers, err := s.RoteadorRepo.GetByFilter(bson.M{
 		"integration": models.RoteadorMikrotik,
 		"active":      true,
 	})
-
 	if err != nil {
 		return
 	}
-
 	if routers == nil || len(routers) == 0 {
 		return
 	}
-
 	for _, router := range routers {
 		go s.collectRouterMemory(router)
 	}
 }
 
 func (s *MemoryScheduler) collectRouterMemory(router models.Roteador) {
-
 	memoryUsage, err := s.Collector.CollectMetric(router, "memory_usage")
 	if err != nil {
 		return
 	}
-
 	memoryValue, ok := memoryUsage.(float64)
 	if !ok {
 		return
 	}
-
 	now := primitive.NewDateTimeFromTime(time.Now())
 	newRecord := models.MemoryRecord{
 		Timestamp: now,
 		Value:     memoryValue,
 	}
-
 	update := bson.M{
 		"$push": bson.M{
 			"memoryUsageToday": newRecord,
@@ -98,12 +94,10 @@ func (s *MemoryScheduler) collectRouterMemory(router models.Roteador) {
 			"updated_at": now,
 		},
 	}
-
 	err = s.RoteadorRepo.UpdateByFilter(
 		bson.M{"_id": router.ID},
 		update,
 	)
-
 	if err != nil {
 		return
 	}

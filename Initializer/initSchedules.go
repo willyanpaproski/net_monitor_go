@@ -21,10 +21,12 @@ func InitSchedules() *services.SchedulerManager {
 	mikrotikAverageMemoryCalculatorScheduler := mikrotikScheduler.NewAverageMemoryCalculatorScheduler(routerRepo)
 
 	mikrotikCpuScheduler := mikrotikScheduler.NewCPUScheduler(routerRepo, mikrotikCollector)
+	mikrotikAverageCpuCalculatorScheduler := mikrotikScheduler.NewAverageCpuCalculatorScheduler(routerRepo)
 
 	schedulerManager.Register(mikrotikMemoryScheduler)
 	schedulerManager.Register(mikrotikAverageMemoryCalculatorScheduler)
 	schedulerManager.Register(mikrotikCpuScheduler)
+	schedulerManager.Register(mikrotikAverageCpuCalculatorScheduler)
 
 	return schedulerManager
 }

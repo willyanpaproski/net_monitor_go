@@ -31,7 +31,14 @@ func NewCPUScheduler(
 }
 
 func (s *CPUScheduler) Start() {
-	s.collectAllCpuUsage()
+	initialTimer := time.NewTimer(10 * time.Minute)
+	select {
+	case <-initialTimer.C:
+		s.collectAllCpuUsage()
+	case <-s.StopCh:
+		initialTimer.Stop()
+		return
+	}
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 	for {
@@ -81,9 +88,6 @@ func (s *CPUScheduler) collectCpuUsage(router models.Roteador) {
 	update := bson.M{
 		"$push": bson.M{
 			"cpuUsageToday": newRecord,
-		},
-		"$set": bson.M{
-			"updated_at": now,
 		},
 	}
 	err = s.RouterRepo.UpdateByFilter(
