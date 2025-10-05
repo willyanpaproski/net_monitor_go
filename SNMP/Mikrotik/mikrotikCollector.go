@@ -53,6 +53,8 @@ func (m *MikrotikCollector) CollectMetric(router models.Roteador, metricName str
 		return mikrotiksnmpcollectors.CollectMikrotikCpuUtilizationPercent(snmpParams, router)
 	case "memory_usage":
 		return mikrotiksnmpcollectors.CollectMikrotikUsedMemory(snmpParams, router)
+	case "disk_usage":
+		return mikrotiksnmpcollectors.CollectMikrotikUsedHdd(snmpParams, router)
 	default:
 		return nil, fmt.Errorf("métrica '%s' não suportada pelo collector MikroTik", metricName)
 	}

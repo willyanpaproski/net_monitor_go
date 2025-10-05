@@ -90,9 +90,6 @@ func (s *MemoryScheduler) collectRouterMemory(router models.Roteador) {
 		"$push": bson.M{
 			"memoryUsageToday": newRecord,
 		},
-		"$set": bson.M{
-			"updated_at": now,
-		},
 	}
 	err = s.RoteadorRepo.UpdateByFilter(
 		bson.M{"_id": router.ID},

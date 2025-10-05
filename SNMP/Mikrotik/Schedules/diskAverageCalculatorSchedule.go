@@ -4,46 +4,47 @@ import (
 	models "net_monitor/Models"
 	repository "net_monitor/Repository"
 	"net_monitor/Utils"
-	interfaces "net_monitor/interfaces"
+	"net_monitor/interfaces"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var _ interfaces.Scheduler = (*CPUScheduler)(nil)
+var _ interfaces.Scheduler = (*DiskScheduler)(nil)
 
-type AverageCpuScheduler struct {
+type AverageDiskScheduler struct {
 	RouterRepo *repository.MongoRepository[models.Roteador]
 	StopCh     chan struct{}
 }
 
-func NewAverageCpuCalculatorScheduler(
+func NewAverageDiskCalculatorScheduler(
 	routerRepo *repository.MongoRepository[models.Roteador],
-) *AverageCpuScheduler {
-	return &AverageCpuScheduler{
+) *AverageDiskScheduler {
+	return &AverageDiskScheduler{
 		RouterRepo: routerRepo,
 		StopCh:     make(chan struct{}),
 	}
 }
 
-func (s *AverageCpuScheduler) Start() {
+func (s *AverageDiskScheduler) Start() {
 	for {
 		timer := Utils.GetNextMidnight()
 		select {
 		case <-timer.C:
-			s.calculateAllAverageCpuUsage()
+			s.calculateAllAverageDiskUsage()
 		case <-s.StopCh:
+			timer.Stop()
 			return
 		}
 	}
 }
 
-func (s *AverageCpuScheduler) Stop() {
+func (s *AverageDiskScheduler) Stop() {
 	close(s.StopCh)
 }
 
-func (s *AverageCpuScheduler) calculateAllAverageCpuUsage() {
+func (s *AverageDiskScheduler) calculateAllAverageDiskUsage() {
 	routers, err := s.RouterRepo.GetByFilter(bson.M{
 		"integration": models.RoteadorMikrotik,
 		"active":      true,
@@ -55,39 +56,39 @@ func (s *AverageCpuScheduler) calculateAllAverageCpuUsage() {
 		return
 	}
 	for _, router := range routers {
-		go s.calculateAverageCpuUsage(router)
+		go s.calculateAverageDiskUsage(router)
 	}
 }
 
-func (s *AverageCpuScheduler) calculateAverageCpuUsage(router models.Roteador) {
-	if router.CpuUsageToday == nil {
+func (s *AverageDiskScheduler) calculateAverageDiskUsage(router models.Roteador) {
+	if router.DiskUsageToday == nil {
 		errUpdate := s.RouterRepo.UpdateByFilter(
 			bson.M{"_id": router.ID},
-			bson.M{"$set": bson.M{"memoryUsageToday": []models.CpuRecord{}}},
+			bson.M{"$set": bson.M{"diskUsageToday": []models.DiskRecord{}}},
 		)
 		if errUpdate != nil {
 			return
 		}
 		return
 	}
-	if len(router.CpuUsageToday) == 0 {
+	if len(router.DiskUsageToday) == 0 {
 		return
 	}
-	totalCpuUsage := 0
-	for _, cpuRegister := range router.CpuUsageToday {
-		totalCpuUsage += cpuRegister.Value
+	totalDisk := 0.0
+	for _, diskRegister := range router.DiskUsageToday {
+		totalDisk += diskRegister.Value
 	}
 	now := primitive.NewDateTimeFromTime(time.Now())
-	newRecord := models.CpuRecord{
+	newRecord := models.DiskRecord{
 		Timestamp: now,
-		Value:     totalCpuUsage / len(router.CpuUsageToday),
+		Value:     totalDisk / float64(len(router.DiskUsageToday)),
 	}
 	update := bson.M{
 		"$push": bson.M{
-			"monthAverageCpuUsage": newRecord,
+			"monthAverageDiskUsage": newRecord,
 		},
 		"$set": bson.M{
-			"cpuUsageToday": []models.CpuRecord{},
+			"diskUsageToday": []models.DiskRecord{},
 		},
 	}
 	errRecord := s.RouterRepo.UpdateByFilter(

@@ -4,37 +4,37 @@ import (
 	models "net_monitor/Models"
 	repository "net_monitor/Repository"
 	mikrotik "net_monitor/SNMP/Mikrotik"
-	interfaces "net_monitor/interfaces"
+	"net_monitor/interfaces"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-var _ interfaces.Scheduler = (*CPUScheduler)(nil)
+var _ interfaces.Scheduler = (*DiskScheduler)(nil)
 
-type CPUScheduler struct {
+type DiskScheduler struct {
 	RouterRepo *repository.MongoRepository[models.Roteador]
 	Collector  *mikrotik.MikrotikCollector
 	StopCh     chan struct{}
 }
 
-func NewCPUScheduler(
+func NewDiskScheduler(
 	routerRepo *repository.MongoRepository[models.Roteador],
 	collector *mikrotik.MikrotikCollector,
-) *CPUScheduler {
-	return &CPUScheduler{
+) *DiskScheduler {
+	return &DiskScheduler{
 		RouterRepo: routerRepo,
 		Collector:  collector,
 		StopCh:     make(chan struct{}),
 	}
 }
 
-func (s *CPUScheduler) Start() {
+func (s *DiskScheduler) Start() {
 	initialTimer := time.NewTimer(10 * time.Minute)
 	select {
 	case <-initialTimer.C:
-		s.collectAllCpuUsage()
+		s.CollectAllDiskUsage()
 	case <-s.StopCh:
 		initialTimer.Stop()
 		return
@@ -44,18 +44,18 @@ func (s *CPUScheduler) Start() {
 	for {
 		select {
 		case <-ticker.C:
-			s.collectAllCpuUsage()
+			s.CollectAllDiskUsage()
 		case <-s.StopCh:
 			return
 		}
 	}
 }
 
-func (s *CPUScheduler) Stop() {
+func (s *DiskScheduler) Stop() {
 	close(s.StopCh)
 }
 
-func (s *CPUScheduler) collectAllCpuUsage() {
+func (s *DiskScheduler) CollectAllDiskUsage() {
 	routers, err := s.RouterRepo.GetByFilter(bson.M{
 		"integration": models.RoteadorMikrotik,
 		"active":      true,
@@ -67,27 +67,27 @@ func (s *CPUScheduler) collectAllCpuUsage() {
 		return
 	}
 	for _, router := range routers {
-		go s.collectCpuUsage(router)
+		go s.CollectDiskUsage(router)
 	}
 }
 
-func (s *CPUScheduler) collectCpuUsage(router models.Roteador) {
-	cpuUsage, err := s.Collector.CollectMetric(router, "cpu_usage")
+func (s *DiskScheduler) CollectDiskUsage(router models.Roteador) {
+	diskUsage, err := s.Collector.CollectMetric(router, "disk_usage")
 	if err != nil {
 		return
 	}
-	cpuUsageValue, ok := cpuUsage.(int)
+	diskValue, ok := diskUsage.(float64)
 	if !ok {
 		return
 	}
 	now := primitive.NewDateTimeFromTime(time.Now())
-	newRecord := models.CpuRecord{
+	newRecord := models.DiskRecord{
 		Timestamp: now,
-		Value:     cpuUsageValue,
+		Value:     diskValue,
 	}
 	update := bson.M{
 		"$push": bson.M{
-			"cpuUsageToday": newRecord,
+			"diskUsageToday": newRecord,
 		},
 	}
 	err = s.RouterRepo.UpdateByFilter(

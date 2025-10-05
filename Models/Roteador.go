@@ -19,7 +19,12 @@ type MemoryRecord struct {
 
 type CpuRecord struct {
 	Timestamp primitive.DateTime `json:"timestamp" bson:"timestamp"`
-	Value     float64            `json:"value" bson:"value"`
+	Value     int                `json:"value" bson:"value"`
+}
+
+type DiskRecord struct {
+	Timestamp primitive.DateTime `json:"timestamp" bson:"timestamp"`
+	Value     float64
 }
 
 type Roteador struct {
@@ -37,6 +42,8 @@ type Roteador struct {
 	MonthAvarageMemoryUsage []MemoryRecord         `json:"monthAvarageMemoryUsage" bson:"monthAvarageMemoryUsage"`
 	CpuUsageToday           []CpuRecord            `json:"cpuUsageToday" bson:"cpuUsageToday"`
 	MonthAverageCpuUsage    []CpuRecord            `json:"monthAverageCpuUsage" bson:"monthAverageCpuUsage"`
+	DiskUsageToday          []DiskRecord           `json:"diskUsageToday" bson:"diskUsageToday"`
+	MonthAverageDiskUsage   []DiskRecord           `json:"monthAverageDiskUsage" bson:"monthAverageDiskUsage"`
 	Created_At              primitive.DateTime     `json:"created_at" bson:"created_at"`
 	Updated_At              primitive.DateTime     `json:"updated_at" bson:"updated_at"`
 }

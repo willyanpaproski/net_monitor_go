@@ -64,6 +64,14 @@ func RoteadorIndexes(collection *mongo.Collection) {
 			Options: options.Index().SetName("_monthAverageCpuUsage"),
 		},
 		{
+			Keys:    bson.D{{Key: "diskUsageToday", Value: 1}},
+			Options: options.Index().SetName("_diskUsageToday"),
+		},
+		{
+			Keys:    bson.D{{Key: "monthAverageDiskUsage", Value: 1}},
+			Options: options.Index().SetName("_monthAverageDiskUsage"),
+		},
+		{
 			Keys:    bson.D{{Key: "created_at", Value: 1}},
 			Options: options.Index().SetName("_created_at"),
 		},
