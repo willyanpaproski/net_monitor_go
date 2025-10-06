@@ -84,6 +84,7 @@
             "invalidIpAddress": "Dirección IP no válida"
         },
         "snmpMonitor": {
+            "noDataCollected": "Aún no se han recopilado datos",
             "dashboard": {
                 "memoryStatCard": {
                     "averageMemoryUsage": "Uso promedio de memoria",

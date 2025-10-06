@@ -18,6 +18,30 @@ export type Router = {
     name: string;
     snmpCommunity: string;
     snmpPort: string;
+    memoryUsageToday: {
+        timestamp: Date,
+        value: number
+    }[];
+    monthAvarageMemoryUsage: {
+        timestamp: Date,
+        value: number
+    }[];
+    cpuUsageToday: {
+        timestamp: Date,
+        value: number
+    }[];
+    monthAverageCpuUsage: {
+        timestamp: Date,
+        value: number
+    }[];
+    diskUsageToday: {
+        timestamp: Date,
+        value: number
+    }[];
+    monthAverageDiskUsage: {
+        timestamp: Date,
+        value: number
+    }[];
     updated_at: Date;
     created_at: Date;
 }
@@ -41,10 +65,29 @@ export function useRouters(): UseQueryResult<Router[], AxiosError<APIError>> {
                     Authorization: `Bearer ${token}`
                 }
             });
-            return response.data
+            return response.data;
         },
         staleTime: 1000 * 60 * 5,
         retry: 1
+    });
+}
+
+export function useRouter(routerId: string): UseQueryResult<Router, AxiosError<APIError>> {
+    const { token } = useAuth();
+
+    return useQuery<Router, AxiosError<APIError>>({
+        queryKey: ['router', routerId],
+        queryFn: async () => {
+            const response = await axios.get(`http://localhost:9090/api/routers/${routerId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response.data;
+        },
+        staleTime: 1000 * 60 * 5,
+        retry: 1,
+        enabled: !!routerId
     });
 }
 

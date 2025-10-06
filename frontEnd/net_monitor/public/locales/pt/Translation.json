@@ -85,6 +85,7 @@
         },
         "snmpMonitor": {
             "dashboard": {
+                "noDataCollected": "Sem dados coletados até o momento",
                 "memoryStatCard": {
                     "averageMemoryUsage": "Uso médio de memória",
                     "lastMonth": "Últimos 30 dias"
