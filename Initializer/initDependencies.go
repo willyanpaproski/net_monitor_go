@@ -1,9 +1,11 @@
 package initializer
 
 import (
+	"log"
 	controllers "net_monitor/Controllers"
 	middlewares "net_monitor/Middlewares"
 	models "net_monitor/Models"
+	netflow "net_monitor/NetFlow"
 	repository "net_monitor/Repository"
 	routes "net_monitor/Routes"
 	mikrotik "net_monitor/SNMP/Mikrotik"
@@ -12,6 +14,7 @@ import (
 	"net_monitor/config"
 	"net_monitor/db"
 	"net_monitor/websocket"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -78,4 +81,48 @@ func InitDependencies(router *gin.Engine) {
 	logController := controllers.NewLogController(logService)
 	routes.SetupLogRoutes(router, logController, authService)
 
+	rabbitURL := os.Getenv("RABBITMQ_URL")
+
+	rawRabbit, err := netflow.NewRabbitMQ(rabbitURL, "ipfix_raw_packets")
+	if err != nil {
+		log.Printf("Erro conectando RabbitMQ para raw packets: %v", err)
+		return
+	}
+
+	decodedRabbit, err := netflow.NewRabbitMQ(rabbitURL, "ipfix_decoded_packets")
+	if err != nil {
+		log.Printf("Erro conectando RabbitMQ para decoded packets: %v", err)
+		rawRabbit.Close()
+		return
+	}
+
+	netflow.RegisterMetricService("mikrotik", netflow.NewMikrotikMetricService())
+	netflow.RegisterMetricService("default", netflow.NewMikrotikMetricService())
+
+	listen := netflow.GetListenAddr()
+	if err := netflow.StartListener(rawRabbit, listen); err != nil {
+		log.Printf("Erro iniciando listener IPFIX: %v", err)
+		rawRabbit.Close()
+		decodedRabbit.Close()
+		return
+	}
+
+	if err := netflow.StartDecoderWorkers(rawRabbit, decodedRabbit, 2); err != nil {
+		log.Printf("Erro iniciando decoder workers: %v", err)
+		rawRabbit.Close()
+		decodedRabbit.Close()
+		return
+	}
+
+	if err := netflow.StartMetricWorkers(decodedRabbit, *roteadorRepo, 4); err != nil {
+		log.Printf("Erro iniciando metric workers: %v", err)
+		rawRabbit.Close()
+		decodedRabbit.Close()
+		return
+	}
+
+	log.Println("Sistema IPFIX iniciado com sucesso:")
+	log.Println("  - Listener UDP recebendo pacotes")
+	log.Println("  - 2 Decoder workers processando raw packets")
+	log.Println("  - 4 Metric workers processando decoded packets")
 }
