@@ -21,7 +21,7 @@ var VendorMetricMappings = map[string][]MetricConfig{
 		},
 		{
 			Name:         "memory_usage",
-			Interval:     10 * time.Second,
+			Interval:     5 * time.Second,
 			DataKey:      "used_memory_mb",
 			FallbackKeys: []string{"memory", "mem_used", "memory_used"},
 			Required:     true,

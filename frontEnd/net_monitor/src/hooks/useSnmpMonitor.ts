@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from './useAuth';
 
+interface MetricData {
+    metric: string;
+    value: number;
+    timestamp: string;
+}
+
 interface RouterData {
     router_id: string;
     router_name?: string;
     vendor: string;
-    timestamp: string;
-    data?: Record<string, any>;
-    error?: string;
+    metrics: Map<string, MetricData[]>; // Armazena histórico por métrica
     lastUpdate: string;
 }
 
@@ -16,6 +20,7 @@ interface SnmpMonitorConfig {
     apiUrl?: string;
     reconnectInterval?: number;
     autoReconnect?: boolean;
+    maxDataPoints?: number; // Limite de pontos no histórico
 }
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected';
@@ -35,6 +40,7 @@ interface UseSnmpMonitorReturn {
 
     clearData: () => void;
     getRouterData: (routerId: string) => RouterData | null;
+    getMetricData: (routerId: string, metric: string) => MetricData[];
     getRoutersList: () => string[];
     getAllRoutersData: () => RouterData[];
 
@@ -44,11 +50,6 @@ interface UseSnmpMonitorReturn {
     hasError: boolean;
 }
 
-/**
- * 
- * @param config
- * @returns
- */
 export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorReturn => {
     const { token } = useAuth();
 
@@ -56,7 +57,8 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
         serverUrl,
         apiUrl,
         reconnectInterval,
-        autoReconnect
+        autoReconnect,
+        maxDataPoints = 50 // Máximo de pontos no gráfico
     } = config;
 
     const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -115,10 +117,36 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
 
                     setRouterData(prevData => {
                         const newData = new Map(prevData);
-                        newData.set(data.router_id, {
-                            ...data,
-                            lastUpdate: new Date().toISOString()
-                        });
+                        const existingRouter = newData.get(data.router_id);
+                        
+                        const metrics = existingRouter?.metrics || new Map<string, MetricData[]>();
+                        const metricHistory = metrics.get(data.metric) || [];
+                        
+                        const isDuplicate = metricHistory.some(
+                            item => item.timestamp === data.timestamp
+                        );
+                        
+                        if (!isDuplicate) {
+                            const updatedHistory = [
+                                ...metricHistory,
+                                {
+                                    metric: data.metric,
+                                    value: data.value,
+                                    timestamp: data.timestamp
+                                }
+                            ].slice(-maxDataPoints);
+                            
+                            metrics.set(data.metric, updatedHistory);
+                            
+                            newData.set(data.router_id, {
+                                router_id: data.router_id,
+                                router_name: data.router_name,
+                                vendor: data.vendor,
+                                metrics,
+                                lastUpdate: new Date().toISOString()
+                            });
+                        }
+                        
                         return newData;
                     });
                 } catch (parseError) {
@@ -154,7 +182,7 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
             setError('Erro ao estabelecer conexão');
             return false;
         }
-    }, [serverUrl, autoReconnect, reconnectInterval, updateStatus]);
+    }, [serverUrl, autoReconnect, reconnectInterval, updateStatus, maxDataPoints, token]);
 
     const disconnect = useCallback((): void => {
         if (reconnectTimerRef.current) {
@@ -200,7 +228,7 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
             setError('Erro ao iniciar coleta de dados');
             return false;
         }
-    }, [apiUrl]);
+    }, [apiUrl, token]);
 
     const stopCollection = useCallback(async (routerId: string): Promise<boolean> => {
         if (!routerId) {
@@ -229,7 +257,7 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
             setError('Erro ao parar coleta de dados');
             return false;
         }
-    }, [apiUrl]);
+    }, [apiUrl, token]);
 
     const clearData = useCallback((): void => {
         setRouterData(new Map());
@@ -237,6 +265,11 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
 
     const getRouterData = useCallback((routerId: string): RouterData | null => {
         return routerData.get(routerId) || null;
+    }, [routerData]);
+
+    const getMetricData = useCallback((routerId: string, metric: string): MetricData[] => {
+        const router = routerData.get(routerId);
+        return router?.metrics.get(metric) || [];
     }, [routerData]);
 
     const getRoutersList = useCallback((): string[] => {
@@ -272,6 +305,7 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
 
         clearData,
         getRouterData,
+        getMetricData,
         getRoutersList,
         getAllRoutersData,
 
