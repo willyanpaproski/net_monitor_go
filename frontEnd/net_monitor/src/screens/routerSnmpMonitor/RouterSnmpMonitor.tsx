@@ -1,11 +1,15 @@
 import { useSnmpMonitor } from "../../hooks/useSnmpMonitor";
 import { useEffect, useMemo } from "react";
 import StatCard from "../../components/StatCard";
-import { Stack, Box, Typography, Paper, Alert } from "@mui/material";
+import { Stack, Box } from "@mui/material";
 import { useI18n } from "../../hooks/usei18n";
 import { useParams } from "react-router-dom";
 import { useRouter } from "../../api/Routers";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import MemoryUsageLineChart from "./charts/MemoryUsageLineChart";
+import MemoryUsagePieChart from "./charts/MemoryUsagePieChart";
+import CpuUsageLineChart from "./charts/CpuUsageLineChart";
+import DiskUsageLineChart from "./charts/DiskUsageLineChart";
+import DiskUsagePieChart from "./charts/DiskUsagePieChart";
 
 export default function RouterSnmpMonitor() {
     const { t } = useI18n();
@@ -122,30 +126,15 @@ export default function RouterSnmpMonitor() {
     const currentCpu = cpuChartData[cpuChartData.length - 1]?.value || 0;
     const currentDisk = diskChartData[diskChartData.length - 1]?.value || 0;
 
-    const CustomTooltip = ({ active, payload }: any) => {
-        if (active && payload && payload.length) {
-            const dataPoint = payload[0].payload;
-            return (
-                <Box
-                    sx={{
-                        bgcolor: 'rgba(30, 30, 30, 0.95)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: 1,
-                        p: 1.5,
-                        backdropFilter: 'blur(10px)'
-                    }}
-                >
-                    <Typography variant="body2" sx={{ color: '#999', mb: 0.5 }}>
-                        {dataPoint.time}
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: payload[0].color, fontWeight: 600 }}>
-                        {payload[0].value.toFixed(1)}
-                    </Typography>
-                </Box>
-            );
-        }
-        return null;
-    };
+    const totalMemory = useMemo(() => {
+        const [data] = monitor.getMetricData(routerId!, 'total_memory');
+        return data ? data.value : 0;
+    }, [monitor.routerData, routerId]);
+
+    const totalDisk = useMemo(() => {
+        const [data] = monitor.getMetricData(routerId!, 'total_disk');
+        return data ? data.value : 0;
+    }, [monitor.routerData, routerId]);
 
     if (router.isLoading) {
         return <div>{t("loading")}...</div>;
@@ -157,35 +146,6 @@ export default function RouterSnmpMonitor() {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Stack direction="row" spacing={2} mb={3} alignItems="center">
-                <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                    Monitor SNMP - {router.data?.name || routerId}
-                </Typography>
-                <Box
-                    sx={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: '50%',
-                        bgcolor: monitor.isConnected ? '#4ade80' : '#ef4444',
-                        animation: monitor.isConnected ? 'pulse 2s infinite' : 'none',
-                        boxShadow: monitor.isConnected ? '0 0 10px rgba(74, 222, 128, 0.5)' : 'none',
-                        '@keyframes pulse': {
-                            '0%, 100%': { opacity: 1 },
-                            '50%': { opacity: 0.5 }
-                        }
-                    }}
-                />
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                    {monitor.statusMessage}
-                </Typography>
-            </Stack>
-
-            {monitor.error && (
-                <Alert severity="error" onClose={monitor.clearError} sx={{ mb: 3 }}>
-                    {monitor.error}
-                </Alert>
-            )}
-
             <Stack direction={"row"} spacing={2} mb={4}>
                 <StatCard
                     title={t("routers.snmpMonitor.dashboard.memoryStatCard.averageMemoryUsage")}
@@ -199,7 +159,7 @@ export default function RouterSnmpMonitor() {
                 <StatCard
                     title={t("routers.snmpMonitor.dashboard.cpuStatCard.averageCpuUsage")}
                     value={monthAverageCpuUsage + "%"}
-                    interval={monthAverageCpuUsage !== 0 ? t("routers.snmpMonitor.dashboard.cpuStatCard.lastMonth") : t('routers.snmpMonitor.dashboard.noDataCollected')}
+                    interval={(monthAverageCpuUsage !== undefined || monthAverageCpuUsage !== null) ? t("routers.snmpMonitor.dashboard.cpuStatCard.lastMonth") : t('routers.snmpMonitor.dashboard.noDataCollected')}
                     trend="up"
                     data={router.data?.monthAverageCpuUsage
                         ?.filter(record => record?.value != null)
@@ -216,201 +176,47 @@ export default function RouterSnmpMonitor() {
                 />
             </Stack>
 
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
-                Monitoramento em Tempo Real
-            </Typography>
-
             <Stack spacing={3}>
-                <Paper 
-                    elevation={0}
-                    sx={{ 
-                        p: 3,
-                        bgcolor: '#0C1017',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        borderRadius: 2,
-                        backdropFilter: 'blur(10px)'
-                    }}
+                <Stack 
+                    direction={{ xs: 'column', lg: 'row' }} 
+                    spacing={3}
                 >
-                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
-                        Uso de Memória: <Box component="span" sx={{ color: '#8b5cf6', fontWeight: 600 }}>{currentMemory.toFixed(1)} MB</Box>
-                    </Typography>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <AreaChart data={memoryChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                            <defs>
-                                <linearGradient id="colorMemory" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid 
-                                strokeDasharray="3 3" 
-                                stroke="rgba(255, 255, 255, 0.05)"
-                                vertical={false}
-                            />
-                            <XAxis 
-                                dataKey="timestamp" 
-                                tick={false}
-                                axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                                label={{ 
-                                    value: 'Tempo', 
-                                    position: 'insideBottom', 
-                                    offset: -5,
-                                    style: { fill: '#999', fontSize: 12 }
-                                }}
-                            />
-                            <YAxis 
-                                stroke="rgba(255, 255, 255, 0.3)"
-                                tick={{ fill: '#999', fontSize: 12 }}
-                                axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                                label={{ 
-                                    value: 'MB', 
-                                    angle: -90, 
-                                    position: 'insideLeft',
-                                    style: { fill: '#999', fontSize: 12 }
-                                }}
-                            />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Area 
-                                type="monotone" 
-                                dataKey="value" 
-                                stroke="#8b5cf6" 
-                                strokeWidth={3}
-                                fill="url(#colorMemory)"
-                                activeDot={{ r: 6, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 2 }}
-                                animationDuration={500}
-                                isAnimationActive={true}
-                                animationEasing="ease-in-out"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </Paper>
+                    <Box sx={{ flex: { xs: 1, lg: 2 } }}>
+                        <MemoryUsageLineChart 
+                            currentMemory={currentMemory}
+                            memoryChartData={memoryChartData}
+                        />
+                    </Box>
+                    <Box sx={{ flex: { xs: 1, lg: 1 } }}>
+                        <MemoryUsagePieChart 
+                            currentMemory={currentMemory}
+                            totalMemory={totalMemory}
+                        />
+                    </Box>
+                </Stack>
 
-                <Paper 
-                    elevation={0}
-                    sx={{ 
-                        p: 3,
-                        bgcolor: '#0C1017',
-                        border: '1px solid rgba(255, 255, 255, 0.05)',
-                        borderRadius: 2,
-                        backdropFilter: 'blur(10px)'
-                    }}
+                <CpuUsageLineChart 
+                    currentCpu={currentCpu}
+                    cpuChartData={cpuChartData}
+                />
+
+                <Stack
+                    direction={{ xs: 'column', lg: 'row' }} 
+                    spacing={3}
                 >
-                    <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
-                        Uso de CPU: <Box component="span" sx={{ color: '#10b981', fontWeight: 600 }}>{currentCpu.toFixed(1)}%</Box>
-                    </Typography>
-                    <ResponsiveContainer width="100%" height={250}>
-                        <LineChart data={cpuChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                            <defs>
-                                <linearGradient id="colorCpu" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid 
-                                strokeDasharray="3 3" 
-                                stroke="rgba(255, 255, 255, 0.05)"
-                                vertical={false}
-                            />
-                            <XAxis 
-                                dataKey="timestamp" 
-                                tick={false}
-                                axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                                label={{ 
-                                    value: 'Tempo', 
-                                    position: 'insideBottom', 
-                                    offset: -5,
-                                    style: { fill: '#999', fontSize: 12 }
-                                }}
-                            />
-                            <YAxis 
-                                domain={[0, 100]}
-                                stroke="rgba(255, 255, 255, 0.3)"
-                                tick={{ fill: '#999', fontSize: 12 }}
-                                axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                                label={{ 
-                                    value: '%', 
-                                    angle: -90, 
-                                    position: 'insideLeft',
-                                    style: { fill: '#999', fontSize: 12 }
-                                }}
-                            />
-                            <Tooltip content={<CustomTooltip unit="%" />} />
-                            <Line 
-                                type="monotone" 
-                                dataKey="value" 
-                                stroke="#10b981" 
-                                strokeWidth={3}
-                                activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
-                                animationDuration={300}
-                                fill="url(#colorCpu)"
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </Paper>
-
-                {diskChartData.length > 0 && (
-                    <Paper 
-                        elevation={0}
-                        sx={{ 
-                            p: 3,
-                            bgcolor: 'rgba(30, 30, 30, 0.4)',
-                            border: '1px solid rgba(255, 255, 255, 0.05)',
-                            borderRadius: 2,
-                            backdropFilter: 'blur(10px)'
-                        }}
-                    >
-                        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 500 }}>
-                            Uso de Disco: <Box component="span" sx={{ color: '#f59e0b', fontWeight: 600 }}>{currentDisk.toFixed(1)} MB</Box>
-                        </Typography>
-                        <ResponsiveContainer width="100%" height={250}>
-                            <LineChart data={diskChartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                                <defs>
-                                    <linearGradient id="colorDisk" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid 
-                                    strokeDasharray="3 3" 
-                                    stroke="rgba(255, 255, 255, 0.05)"
-                                    vertical={false}
-                                />
-                                <XAxis 
-                                    dataKey="timestamp" 
-                                    tick={false}
-                                    axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                                    label={{ 
-                                        value: 'Tempo', 
-                                        position: 'insideBottom', 
-                                        offset: -5,
-                                        style: { fill: '#999', fontSize: 12 }
-                                    }}
-                                />
-                                <YAxis 
-                                    stroke="rgba(255, 255, 255, 0.3)"
-                                    tick={{ fill: '#999', fontSize: 12 }}
-                                    axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
-                                    label={{ 
-                                        value: 'MB', 
-                                        angle: -90, 
-                                        position: 'insideLeft',
-                                        style: { fill: '#999', fontSize: 12 }
-                                    }}
-                                />
-                                <Tooltip content={<CustomTooltip unit="MB" />} />
-                                <Line 
-                                    type="monotone" 
-                                    dataKey="value" 
-                                    stroke="#f59e0b" 
-                                    strokeWidth={3}
-                                    activeDot={{ r: 6, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
-                                    animationDuration={300}
-                                    fill="url(#colorDisk)"
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Paper>
-                )}
+                    <Box sx={{ flex: { xs: 1, lg: 2 } }}>
+                        <DiskUsageLineChart 
+                            currentDisk={currentDisk}
+                            diskChartData={diskChartData}
+                        />
+                    </Box>
+                    <Box sx={{ flex: { xs: 1, lg: 1 } }}>
+                        <DiskUsagePieChart 
+                            currentDisk={currentDisk}
+                            totalDisk={totalDisk}
+                        />
+                    </Box>
+                </Stack>
             </Stack>
         </Box>
     );

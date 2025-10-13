@@ -38,6 +38,18 @@ func (m *MikrotikCollector) Collect(roteador models.Roteador) (map[string]interf
 		data["used_memory_mb"] = memory
 	}
 
+	if totalMemory, err := mikrotiksnmpcollectors.CollectMikrotikTotalMemory(snmpParams, roteador); err == nil {
+		data["total_memory_mb"] = totalMemory
+	}
+
+	if diskUsage, err := mikrotiksnmpcollectors.CollectMikrotikUsedHdd(snmpParams, roteador); err == nil {
+		data["used_disk_mb"] = diskUsage
+	}
+
+	if totalDisk, err := mikrotiksnmpcollectors.CollectMikrotikTotalHdd(snmpParams, roteador); err == nil {
+		data["total_disk_mb"] = totalDisk
+	}
+
 	return data, nil
 }
 
@@ -55,19 +67,26 @@ func (m *MikrotikCollector) CollectMetric(router models.Roteador, metricName str
 		return mikrotiksnmpcollectors.CollectMikrotikUsedMemory(snmpParams, router)
 	case "disk_usage":
 		return mikrotiksnmpcollectors.CollectMikrotikUsedHdd(snmpParams, router)
+	case "total_disk":
+		return mikrotiksnmpcollectors.CollectMikrotikTotalHdd(snmpParams, router)
+	case "total_memory":
+		return mikrotiksnmpcollectors.CollectMikrotikTotalMemory(snmpParams, router)
 	default:
 		return nil, fmt.Errorf("métrica '%s' não suportada pelo collector MikroTik", metricName)
 	}
 }
 
 func (m *MikrotikCollector) GetSupportedMetrics() []string {
-	return []string{"cpu_usage", "memory_usage", "interface_stats", "system_info"}
+	return []string{"cpu_usage", "memory_usage", "disk_usage", "total_disk", "interface_stats", "system_info"}
 }
 
 func (m *MikrotikCollector) GetMetricMapping() map[string]string {
 	return map[string]string{
 		"cpu_usage":    "cpu_usage_percent",
 		"memory_usage": "used_memory_mb",
+		"total_memory": "total_memory_mb",
+		"disk_usage":   "used_disk_mb",
+		"total_disk":   "total_disk",
 	}
 }
 

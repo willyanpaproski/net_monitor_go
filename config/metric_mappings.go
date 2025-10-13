@@ -26,6 +26,27 @@ var VendorMetricMappings = map[string][]MetricConfig{
 			FallbackKeys: []string{"memory", "mem_used", "memory_used"},
 			Required:     true,
 		},
+		{
+			Name:         "total_memory",
+			Interval:     120 * time.Second,
+			DataKey:      "total_memory_mb",
+			FallbackKeys: []string{"total_memory", "total_mem"},
+			Required:     true,
+		},
+		{
+			Name:         "disk_usage",
+			Interval:     5 * time.Second,
+			DataKey:      "used_disk_mb",
+			FallbackKeys: []string{"disk", "disk_used"},
+			Required:     true,
+		},
+		{
+			Name:         "total_disk",
+			Interval:     120 * time.Second,
+			DataKey:      "total_disk_mb",
+			FallbackKeys: []string{"total_disk"},
+			Required:     true,
+		},
 	},
 	"cisco": {
 		{
