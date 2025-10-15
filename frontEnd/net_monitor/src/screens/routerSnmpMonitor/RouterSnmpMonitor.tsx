@@ -27,11 +27,9 @@ export default function RouterSnmpMonitor() {
     useEffect(() => {
         const initCollection = async () => {
             if (routerId) {
-                console.log('🔌 Conectando ao router:', routerId);
                 const connected = await monitor.connect(routerId, 'mikrotik');
                 
                 if (connected) {
-                    console.log('🚀 Iniciando coleta automática');
                     await monitor.startCollection(routerId);
                 }
             }
@@ -47,29 +45,65 @@ export default function RouterSnmpMonitor() {
         };
     }, [routerId]);
 
-    const monthAverageMemoryUsage = useMemo(() => {
-        if (!router.data?.monthAvarageMemoryUsage?.length) return 0;
-        const validRecords = router.data.monthAvarageMemoryUsage.filter(record => record?.value != null);
-        if (validRecords.length === 0) return 0;
-        const soma = validRecords.reduce((acc, record) => acc + record.value, 0);
-        return soma / validRecords.length;
-    }, [router.data]);
+    const monthlyMemoryData = useMemo(() => {
+        if (!router.data?.monthAvarageMemoryUsage?.length) {
+            return { average: 0, values: [] };
+        }
+        
+        const validRecords = router.data.monthAvarageMemoryUsage.filter(
+            record => record?.value != null && !isNaN(record.value)
+        );
+        
+        if (validRecords.length === 0) {
+            return { average: 0, values: [] };
+        }
+        
+        const values = validRecords.map(record => Number(record.value.toFixed(1)));
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        const average = sum / values.length;
+        
+        return { average, values };
+    }, [router.data?.monthAvarageMemoryUsage]);
 
-    const monthAverageCpuUsage = useMemo(() => {
-        if (!router.data?.monthAverageCpuUsage?.length) return 0;
-        const validRecords = router.data.monthAverageCpuUsage.filter(record => record?.value != null);
-        if (validRecords.length === 0) return 0;
-        const soma = validRecords.reduce((acc, record) => acc + record.value, 0);
-        return soma / validRecords.length;
-    }, [router.data]);
+    const monthlyCpuData = useMemo(() => {
+        if (!router.data?.monthAverageCpuUsage?.length) {
+            return { average: 0, values: [] };
+        }
+        
+        const validRecords = router.data.monthAverageCpuUsage.filter(
+            record => record?.value != null && !isNaN(record.value)
+        );
+        
+        if (validRecords.length === 0) {
+            return { average: 0, values: [] };
+        }
+        
+        const values = validRecords.map(record => Number(record.value.toFixed(1)));
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        const average = sum / values.length;
+        
+        return { average, values };
+    }, [router.data?.monthAverageCpuUsage]);
 
-    const monthAverageDiskUsage = useMemo(() => {
-        if (!router.data?.monthAverageDiskUsage?.length) return 0;
-        const validRecords = router.data.monthAverageDiskUsage.filter(record => record?.value != null);
-        if (validRecords.length === 0) return 0;
-        const soma = validRecords.reduce((acc, record) => acc + record.value, 0);
-        return soma / validRecords.length;
-    }, [router.data]);
+    const monthlyDiskData = useMemo(() => {
+        if (!router.data?.monthAverageDiskUsage?.length) {
+            return { average: 0, values: [] };
+        }
+        
+        const validRecords = router.data.monthAverageDiskUsage.filter(
+            record => record?.value != null && !isNaN(record.value)
+        );
+        
+        if (validRecords.length === 0) {
+            return { average: 0, values: [] };
+        }
+        
+        const values = validRecords.map(record => Number(record.value.toFixed(1)));
+        const sum = values.reduce((acc, val) => acc + val, 0);
+        const average = sum / values.length;
+        
+        return { average, values };
+    }, [router.data?.monthAverageDiskUsage]);
 
     const memoryChartData = useMemo(() => {
         const data = monitor.getMetricData(routerId!, 'memory_usage');
@@ -145,34 +179,43 @@ export default function RouterSnmpMonitor() {
     }
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Stack direction={"row"} spacing={2} mb={4}>
+        <Box sx={{ p: 3, bgcolor: '#050810', minHeight: '100vh', width: '100%' }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4}>
                 <StatCard
                     title={t("routers.snmpMonitor.dashboard.memoryStatCard.averageMemoryUsage")}
-                    value={monthAverageMemoryUsage.toFixed(1) + "MB"}
-                    interval={monthAverageMemoryUsage !== 0 ? t("routers.snmpMonitor.dashboard.memoryStatCard.lastMonth") : t('routers.snmpMonitor.dashboard.noDataCollected')}
-                    trend="up"
-                    data={router.data?.monthAvarageMemoryUsage
-                        ?.filter(record => record?.value != null)
-                        .map((record) => Number(record.value.toFixed(1))) || []}
+                    value={monthlyMemoryData.average > 0 ? `${monthlyMemoryData.average.toFixed(1)}MB` : "0MB"}
+                    interval={
+                        monthlyMemoryData.values.length > 0 
+                            ? t("routers.snmpMonitor.dashboard.memoryStatCard.lastMonth") 
+                            : t('routers.snmpMonitor.dashboard.noDataCollected')
+                    }
+                    trend="neutral"
+                    data={monthlyMemoryData.values}
+                    color="purple"
                 />
                 <StatCard
                     title={t("routers.snmpMonitor.dashboard.cpuStatCard.averageCpuUsage")}
-                    value={monthAverageCpuUsage + "%"}
-                    interval={(monthAverageCpuUsage !== undefined || monthAverageCpuUsage !== null) ? t("routers.snmpMonitor.dashboard.cpuStatCard.lastMonth") : t('routers.snmpMonitor.dashboard.noDataCollected')}
-                    trend="up"
-                    data={router.data?.monthAverageCpuUsage
-                        ?.filter(record => record?.value != null)
-                        .map(record => record.value) || []}
+                    value={monthlyCpuData.average > 0 ? `${monthlyCpuData.average.toFixed(1)}%` : "0%"}
+                    interval={
+                        monthlyCpuData.values.length > 0 
+                            ? t("routers.snmpMonitor.dashboard.cpuStatCard.lastMonth") 
+                            : t('routers.snmpMonitor.dashboard.noDataCollected')
+                    }
+                    trend="neutral"
+                    data={monthlyCpuData.values}
+                    color="green"
                 />
                 <StatCard
                     title={t("routers.snmpMonitor.dashboard.diskStatCard.averageDiskUsage")}
-                    value={monthAverageDiskUsage + "MB"}
-                    interval={monthAverageDiskUsage !== 0 ? t("routers.snmpMonitor.dashboard.diskStatCard.lastMonth") : t('routers.snmpMonitor.dashboard.noDataCollected')}
-                    trend="up"
-                    data={router.data?.monthAverageDiskUsage
-                        ?.filter(record => record?.value != null)
-                        .map((record) => Number(record.value.toFixed(1))) || []}
+                    value={monthlyDiskData.average > 0 ? `${monthlyDiskData.average.toFixed(1)}MB` : "0MB"}
+                    interval={
+                        monthlyDiskData.average > 0 
+                            ? t("routers.snmpMonitor.dashboard.diskStatCard.lastMonth") 
+                            : t('routers.snmpMonitor.dashboard.noDataCollected')
+                    }
+                    trend="neutral"
+                    data={monthlyDiskData.values}
+                    color="amber"
                 />
             </Stack>
 

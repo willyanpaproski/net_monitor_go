@@ -24,7 +24,7 @@ type CpuRecord struct {
 
 type DiskRecord struct {
 	Timestamp primitive.DateTime `json:"timestamp" bson:"timestamp"`
-	Value     float64
+	Value     float64            `json:"value" bson:"value"`
 }
 
 type Roteador struct {
