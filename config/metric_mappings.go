@@ -47,6 +47,20 @@ var VendorMetricMappings = map[string][]MetricConfig{
 			FallbackKeys: []string{"total_disk"},
 			Required:     true,
 		},
+		{
+			Name:         "uptime",
+			Interval:     10 * time.Second,
+			DataKey:      "system_uptime",
+			FallbackKeys: []string{"system_uptime"},
+			Required:     true,
+		},
+		{
+			Name:         "physicalInterfaces",
+			Interval:     30 * time.Second,
+			DataKey:      "physicalInterfaces",
+			FallbackKeys: []string{"physicalInterfaces"},
+			Required:     false,
+		},
 	},
 	"cisco": {
 		{
