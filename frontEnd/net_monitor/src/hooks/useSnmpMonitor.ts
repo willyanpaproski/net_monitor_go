@@ -3,7 +3,7 @@ import { useAuth } from './useAuth';
 
 interface MetricData {
     metric: string;
-    value: number | string;
+    value: any;
     timestamp: string;
 }
 

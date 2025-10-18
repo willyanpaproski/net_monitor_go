@@ -1,21 +1,17 @@
 import { useSnmpMonitor } from "../../hooks/useSnmpMonitor";
 import { useEffect, useMemo } from "react";
-import StatCard from "../../components/StatCard";
-import { Stack, Box, Container } from "@mui/material";
-import { useI18n } from "../../hooks/usei18n";
-import { useParams } from "react-router-dom";
+import { Box, Tabs, Tab } from "@mui/material";
+import { Dashboard as DashboardIcon, SettingsEthernet } from "@mui/icons-material";
+import { useParams, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useRouter } from "../../api/Routers";
-import MemoryUsageLineChart from "./charts/MemoryUsageLineChart";
-import MemoryUsagePieChart from "./charts/MemoryUsagePieChart";
-import CpuUsageLineChart from "./charts/CpuUsageLineChart";
-import DiskUsageLineChart from "./charts/DiskUsageLineChart";
-import DiskUsagePieChart from "./charts/DiskUsagePieChart";
-import UptimeCard from "./charts/uptimeCard";
+import { useI18n } from "../../hooks/usei18n";
 
 export default function RouterSnmpMonitor() {
     const { t } = useI18n();
     const { routerId } = useParams<{ routerId: string }>();
     const router = useRouter(routerId!);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const monitor = useSnmpMonitor({
         apiUrl: "http://localhost:9090",
@@ -29,15 +25,12 @@ export default function RouterSnmpMonitor() {
         const initCollection = async () => {
             if (routerId) {
                 const connected = await monitor.connect(routerId, 'mikrotik');
-                
                 if (connected) {
                     await monitor.startCollection(routerId);
                 }
             }
         };
-
         initCollection();
-
         return () => {
             if (routerId) {
                 monitor.stopCollection(routerId);
@@ -176,6 +169,31 @@ export default function RouterSnmpMonitor() {
         return data ? data.value as string : '00h 00m 00s';
     }, [monitor.routerData, routerId]);
 
+    const physicalInterfaces = useMemo(() => {
+        const [data] = monitor.getMetricData(routerId!, 'physicalInterfaces');
+        return data ? (data.value as any[]) : [];
+    }, [monitor.routerData, routerId]);
+
+    const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
+        navigate(newValue);
+    };
+
+    const outletContext = {
+        uptime,
+        monthlyMemoryData,
+        monthlyCpuData,
+        monthlyDiskData,
+        currentMemory,
+        memoryChartData,
+        totalMemory,
+        currentCpu,
+        cpuChartData,
+        currentDisk,
+        diskChartData,
+        totalDisk,
+        physicalInterfaces
+    };
+
     if (router.isLoading) {
         return <div>{t("loading")}...</div>;
     }
@@ -189,97 +207,47 @@ export default function RouterSnmpMonitor() {
             bgcolor: '#050810', 
             minHeight: '100vh', 
             width: '100%',
-            overflow: 'hidden'
+            py: 3, 
+            px: { xs: 2, sm: 3 },
+            boxSizing: 'border-box'
         }}>
-            <Container maxWidth={false} sx={{ py: 3, px: { xs: 2, sm: 3 } }}>
-                <Box sx={{ mb: 4 }}>
-                    <UptimeCard 
-                        uptime={uptime}
+            <Box sx={{ mb: 4, borderBottom: 1, borderColor: 'rgba(148, 163, 184, 0.1)' }}>
+                <Tabs 
+                    value={location.pathname}
+                    onChange={handleTabChange}
+                    sx={{
+                        '& .MuiTab-root': {
+                            color: '#64748b',
+                            textTransform: 'none',
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            minHeight: 56,
+                            '&.Mui-selected': {
+                                color: '#8b5cf6',
+                            },
+                        },
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: '#8b5cf6',
+                            height: 3,
+                        },
+                    }}
+                >
+                    <Tab 
+                        icon={<DashboardIcon />} 
+                        iconPosition="start" 
+                        label="Dashboard"
+                        value={`/router/${routerId}`}
                     />
-                </Box>
+                    <Tab 
+                        icon={<SettingsEthernet />} 
+                        iconPosition="start" 
+                        label="Interfaces Físicas"
+                        value={`/router/${routerId}/interfaces`}
+                    />
+                </Tabs>
+            </Box>
 
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mb={4}>
-                    <StatCard
-                        title={t("routers.snmpMonitor.dashboard.memoryStatCard.averageMemoryUsage")}
-                        value={monthlyMemoryData.average > 0 ? `${monthlyMemoryData.average.toFixed(1)}MB` : "0MB"}
-                        interval={
-                            monthlyMemoryData.values.length > 0 
-                                ? t("routers.snmpMonitor.dashboard.memoryStatCard.lastMonth") 
-                                : t('routers.snmpMonitor.dashboard.noDataCollected')
-                        }
-                        trend="neutral"
-                        data={monthlyMemoryData.values}
-                        color="purple"
-                    />
-                    <StatCard
-                        title={t("routers.snmpMonitor.dashboard.cpuStatCard.averageCpuUsage")}
-                        value={monthlyCpuData.average > 0 ? `${monthlyCpuData.average.toFixed(1)}%` : "0%"}
-                        interval={
-                            monthlyCpuData.values.length > 0 
-                                ? t("routers.snmpMonitor.dashboard.cpuStatCard.lastMonth") 
-                                : t('routers.snmpMonitor.dashboard.noDataCollected')
-                        }
-                        trend="neutral"
-                        data={monthlyCpuData.values}
-                        color="green"
-                    />
-                    <StatCard
-                        title={t("routers.snmpMonitor.dashboard.diskStatCard.averageDiskUsage")}
-                        value={monthlyDiskData.average > 0 ? `${monthlyDiskData.average.toFixed(1)}MB` : "0MB"}
-                        interval={
-                            monthlyDiskData.average > 0 
-                                ? t("routers.snmpMonitor.dashboard.diskStatCard.lastMonth") 
-                                : t('routers.snmpMonitor.dashboard.noDataCollected')
-                        }
-                        trend="neutral"
-                        data={monthlyDiskData.values}
-                        color="amber"
-                    />
-                </Stack>
-
-                <Stack spacing={3}>
-                    <Stack 
-                        direction={{ xs: 'column', lg: 'row' }} 
-                        spacing={3}
-                    >
-                        <Box sx={{ flex: { xs: 1, lg: 2 }, minWidth: 0 }}>
-                            <MemoryUsageLineChart 
-                                currentMemory={currentMemory}
-                                memoryChartData={memoryChartData}
-                            />
-                        </Box>
-                        <Box sx={{ flex: { xs: 1, lg: 1 }, minWidth: 0 }}>
-                            <MemoryUsagePieChart 
-                                currentMemory={currentMemory}
-                                totalMemory={totalMemory}
-                            />
-                        </Box>
-                    </Stack>
-
-                    <CpuUsageLineChart 
-                        currentCpu={currentCpu}
-                        cpuChartData={cpuChartData}
-                    />
-
-                    <Stack
-                        direction={{ xs: 'column', lg: 'row' }} 
-                        spacing={3}
-                    >
-                        <Box sx={{ flex: { xs: 1, lg: 2 }, minWidth: 0 }}>
-                            <DiskUsageLineChart 
-                                currentDisk={currentDisk}
-                                diskChartData={diskChartData}
-                            />
-                        </Box>
-                        <Box sx={{ flex: { xs: 1, lg: 1 }, minWidth: 0 }}>
-                            <DiskUsagePieChart 
-                                currentDisk={currentDisk}
-                                totalDisk={totalDisk}
-                            />
-                        </Box>
-                    </Stack>
-                </Stack>
-            </Container>
+            <Outlet context={outletContext} />
         </Box>
     );
 }

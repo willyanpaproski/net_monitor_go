@@ -11,7 +11,7 @@ export default function Layout() {
                 sx={{ 
                     flexGrow: 1,
                     overflow: 'auto',
-                    width: { xs: '100%', md: 'calc(100% - 240px)' }
+                    minWidth: 0
                 }}
             >
                 <Outlet />

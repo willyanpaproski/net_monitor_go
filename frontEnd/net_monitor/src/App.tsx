@@ -12,6 +12,8 @@ import Layout from "./components/Layout";
 import Transmitters from "./screens/transmitters/Transmitters";
 import Switches from "./screens/switches/Switches";
 import RouterSnmpMonitor from "./screens/routerSnmpMonitor/RouterSnmpMonitor";
+import RouterDashboard from "./screens/routerSnmpMonitor/RouterDashboard";
+import RouterInterfaces from "./screens/routerSnmpMonitor/RouterInterfaces";
 
 export type APIError = {
   error : {
@@ -65,7 +67,10 @@ export default function App() {
                       <RouterSnmpMonitor />
                     </ProtectedRoute>
                   }
-                />
+                >
+                  <Route index element={<RouterDashboard />} />
+                  <Route path="interfaces" element={<RouterInterfaces />} />
+                </Route>
                 
                 <Route 
                   path="/" 
