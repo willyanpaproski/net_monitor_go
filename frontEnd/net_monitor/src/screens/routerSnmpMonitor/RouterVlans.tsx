@@ -1,19 +1,19 @@
 import { useOutletContext } from "react-router-dom";
 import { Box } from "@mui/material";
-import PhysicalInterfacesDashboard from "./charts/PhysicalInterfaceList";
+import VlanDashboard from "./charts/VlanList";
 import TrapEventsMonitor from "../../components/TrapEventsMonitor";
 import { useTrapMonitor } from "../../hooks/useTrapMonitor";
 
 type RouterDataContext = {
-    physicalInterfaces: any[];
+    vlans: any[];
     routerId: string;
     websocketRef: React.MutableRefObject<WebSocket | null>;
     isConnected: boolean;
 };
 
-export default function RouterInterfaces() {
-    const { physicalInterfaces, routerId, websocketRef, isConnected } = useOutletContext<RouterDataContext>();
-    
+export default function RouterVlans() {
+    const { vlans, routerId, websocketRef, isConnected } = useOutletContext<RouterDataContext>();
+   
     const { events, clearEvents } = useTrapMonitor(websocketRef, isConnected, {
         maxEvents: 50,
         routerId: routerId
@@ -21,12 +21,12 @@ export default function RouterInterfaces() {
 
     return (
         <Box sx={{ width: '100%' }}>
-            <TrapEventsMonitor 
-                events={events} 
+            <TrapEventsMonitor
+                events={events}
                 onClearEvents={clearEvents}
             />
-            
-            <PhysicalInterfacesDashboard interfaces={physicalInterfaces} />
+           
+            <VlanDashboard vlans={vlans} />
         </Box>
     );
 }

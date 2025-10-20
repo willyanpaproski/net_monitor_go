@@ -9,7 +9,8 @@ import (
 )
 
 type RoteadorController struct {
-	Service services.RoteadorService
+	Service     services.RoteadorService
+	TrapService *services.TrapService
 }
 
 func NewRoteadorController(service services.RoteadorService) *RoteadorController {
@@ -49,6 +50,9 @@ func (c *RoteadorController) CreateRoteador(goGin *gin.Context) {
 	if errCreate != nil {
 		goGin.JSON(http.StatusInternalServerError, gin.H{"error": errCreate.Error()})
 		return
+	}
+	if c.TrapService != nil {
+		c.TrapService.RegisterRouter(&req)
 	}
 	if apiErr != nil {
 		goGin.JSON(http.StatusBadRequest, gin.H{"error": apiErr})
@@ -95,6 +99,9 @@ func (c *RoteadorController) DeleteRoteador(goGin *gin.Context) {
 	if roteador == nil {
 		goGin.JSON(http.StatusNotFound, gin.H{"error": "Roteador não encontrado"})
 		return
+	}
+	if c.TrapService != nil {
+		c.TrapService.UnregisterRouter(roteador.IPAddress)
 	}
 	errDelete := c.Service.Delete(id)
 	if errDelete != nil {

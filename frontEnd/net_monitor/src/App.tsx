@@ -14,6 +14,7 @@ import Switches from "./screens/switches/Switches";
 import RouterSnmpMonitor from "./screens/routerSnmpMonitor/RouterSnmpMonitor";
 import RouterDashboard from "./screens/routerSnmpMonitor/RouterDashboard";
 import RouterInterfaces from "./screens/routerSnmpMonitor/RouterInterfaces";
+import RouterVlans from "./screens/routerSnmpMonitor/RouterVlans";
 
 export type APIError = {
   error : {
@@ -70,6 +71,7 @@ export default function App() {
                 >
                   <Route index element={<RouterDashboard />} />
                   <Route path="interfaces" element={<RouterInterfaces />} />
+                  <Route path="vlans" element={<RouterVlans />} />
                 </Route>
                 
                 <Route 

@@ -17,12 +17,30 @@ type WalkResult struct {
 	Value interface{}
 }
 
+func IsPPP(ifType int) bool {
+	pppTypes := map[int]bool{
+		23: true, //PPP
+	}
+	return pppTypes[ifType]
+}
+
+func IsVlan(ifType int) bool {
+	vlanTypes := map[int]bool{
+		135: true, //l2vlan
+		136: true, //l3ipvlan
+		137: true, //l3ipxvlan
+		222: true, //ciscoISLvlan
+	}
+	return vlanTypes[ifType]
+}
+
 func IsPhysicalInterface(ifType int) bool {
 	physicalTypes := map[int]bool{
 		1:   true, // other
 		6:   true, // ethernet-csmacd
 		26:  true, //ethernet3Mbit
 		62:  true, // fast ethernet
+		69:  true, // fastEtherFX
 		117: true, // gigabitEthernet
 	}
 	return physicalTypes[ifType]

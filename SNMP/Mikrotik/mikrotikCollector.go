@@ -83,13 +83,15 @@ func (m *MikrotikCollector) CollectMetric(router models.Roteador, metricName str
 		return mikrotiksnmpcollectors.CollectMikrotikUptime(snmpParams, router)
 	case "physicalInterfaces":
 		return mikrotiksnmpcollectors.CollectMikrotikPhysicalInterfaces(snmpParams, router)
+	case "vlans":
+		return mikrotiksnmpcollectors.CollectMikrotikVlans(snmpParams, router)
 	default:
 		return nil, fmt.Errorf("métrica '%s' não suportada pelo collector MikroTik", metricName)
 	}
 }
 
 func (m *MikrotikCollector) GetSupportedMetrics() []string {
-	return []string{"cpu_usage", "memory_usage", "disk_usage", "total_disk", "interface_stats", "system_info", "physicalInterfaces"}
+	return []string{"cpu_usage", "memory_usage", "disk_usage", "total_disk", "interface_stats", "system_info", "physicalInterfaces", "vlans"}
 }
 
 func (m *MikrotikCollector) GetMetricMapping() map[string]string {
@@ -100,6 +102,7 @@ func (m *MikrotikCollector) GetMetricMapping() map[string]string {
 		"disk_usage":         "used_disk_mb",
 		"total_disk":         "total_disk",
 		"physicalInterfaces": "physicalInterfaces",
+		"vlans":              "vlans",
 	}
 }
 

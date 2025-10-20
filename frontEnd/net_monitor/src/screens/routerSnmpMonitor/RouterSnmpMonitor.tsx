@@ -1,7 +1,7 @@
 import { useSnmpMonitor } from "../../hooks/useSnmpMonitor";
 import { useEffect, useMemo } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
-import { Dashboard as DashboardIcon, SettingsEthernet } from "@mui/icons-material";
+import { Dashboard as DashboardIcon, SettingsEthernet, HubOutlined } from "@mui/icons-material";
 import { useParams, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useRouter } from "../../api/Routers";
 import { useI18n } from "../../hooks/usei18n";
@@ -174,6 +174,11 @@ export default function RouterSnmpMonitor() {
         return data ? (data.value as any[]) : [];
     }, [monitor.routerData, routerId]);
 
+    const vlans = useMemo(() => {
+        const [data] = monitor.getMetricData(routerId!, 'vlans');
+        return data ? (data.value as any[]) : [];
+    }, [monitor.routerData, routerId]);
+
     const handleTabChange = (_event: React.SyntheticEvent, newValue: string) => {
         navigate(newValue);
     };
@@ -191,7 +196,10 @@ export default function RouterSnmpMonitor() {
         currentDisk,
         diskChartData,
         totalDisk,
-        physicalInterfaces
+        physicalInterfaces,
+        vlans,
+        websocketRef: monitor.websocketRef,
+        isConnected: monitor.isConnected
     };
 
     if (router.isLoading) {
@@ -211,7 +219,7 @@ export default function RouterSnmpMonitor() {
             px: { xs: 2, sm: 3 },
             boxSizing: 'border-box'
         }}>
-            <Box sx={{ mb: 4, borderBottom: 1, borderColor: 'rgba(148, 163, 184, 0.1)' }}>
+            <Box sx={{ mb: 4, borderBottom: 1, borderColor: 'rgba(148, 163, 184, 0.1)', overflowX: 'hidden' }}>
                 <Tabs 
                     value={location.pathname}
                     onChange={handleTabChange}
@@ -243,6 +251,12 @@ export default function RouterSnmpMonitor() {
                         iconPosition="start" 
                         label="Interfaces Físicas"
                         value={`/router/${routerId}/interfaces`}
+                    />
+                    <Tab 
+                        icon={<HubOutlined />}
+                        iconPosition="start"
+                        label="Vlans"
+                        value={`/router/${routerId}/vlans`}
                     />
                 </Tabs>
             </Box>

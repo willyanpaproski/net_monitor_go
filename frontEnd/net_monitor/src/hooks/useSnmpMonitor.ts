@@ -48,6 +48,7 @@ interface UseSnmpMonitorReturn {
 
     connectedRoutersCount: number;
     hasError: boolean;
+    websocketRef: React.RefObject<WebSocket | null>;
 }
 
 export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorReturn => {
@@ -312,6 +313,7 @@ export const useSnmpMonitor = (config: SnmpMonitorConfig = {}): UseSnmpMonitorRe
         clearError,
 
         connectedRoutersCount: routerData.size,
-        hasError: !!error
+        hasError: !!error,
+        websocketRef
     };
 };

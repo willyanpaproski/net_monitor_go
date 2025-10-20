@@ -47,14 +47,30 @@ func InitDependencies(router *gin.Engine) {
 	userController := controllers.NewUserController(userService)
 	routes.SetupUserRoutes(router, userController, authService)
 
+	hub := websocket.NewHub(authService)
+	go hub.Run()
+
 	roteadorCollection := db.GetCollection("roteador")
 	roteadorRepo := repository.NewMongoRepository[models.Roteador](roteadorCollection)
 	roteadorService := services.NewRoteadorService(roteadorRepo)
-	roteadorController := controllers.NewRoteadorController(roteadorService)
-	routes.SetupRoteadorRoutes(router, roteadorController, authService)
 
-	hub := websocket.NewHub(authService)
-	go hub.Run()
+	trapPort := os.Getenv("SNMP_TRAP_PORT")
+	if trapPort == "" {
+		trapPort = "162"
+	}
+
+	trapService := services.NewTrapService(hub, roteadorService, trapPort)
+	go func() {
+		if err := trapService.Start(); err != nil {
+			log.Printf("Erro ao iniciar SNMP Trap Service: %v", err)
+		} else {
+			log.Printf("SNMP Trap Service iniciado na porta %s", trapPort)
+		}
+	}()
+
+	roteadorController := controllers.NewRoteadorController(roteadorService)
+	roteadorController.TrapService = trapService
+	routes.SetupRoteadorRoutes(router, roteadorController, authService)
 
 	snmpService := services.NewSNMPService(hub, roteadorService)
 

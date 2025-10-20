@@ -59,7 +59,14 @@ var VendorMetricMappings = map[string][]MetricConfig{
 			Interval:     30 * time.Second,
 			DataKey:      "physicalInterfaces",
 			FallbackKeys: []string{"physicalInterfaces"},
-			Required:     false,
+			Required:     true,
+		},
+		{
+			Name:         "vlans",
+			Interval:     30 * time.Second,
+			DataKey:      "vlans",
+			FallbackKeys: []string{"vlans"},
+			Required:     true,
 		},
 	},
 	"cisco": {
